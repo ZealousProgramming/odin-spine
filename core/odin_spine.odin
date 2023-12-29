@@ -243,79 +243,75 @@ spBlendMode :: enum cc.int {
 // --------------------------------------
 
 spAnimation :: struct {
-		name: cstring,
-		duration: cc.float,
-
-		timelines: ^spTimelineArray,
-		timelineIds: ^spPropertyIdArray,
+	name:        cstring,
+	duration:    cc.float,
+	timelines:   ^spTimelineArray,
+	timelineIds: ^spPropertyIdArray,
 }
 
 spAnimationState :: struct {
-		data: ^spAnimationStateData,
-		
-		tracksCount: cc.int,
-		tracks: [^]^spTrackEntry,
-
-		listener: #type proc(state: ^spAnimationState, type: spEventType, entry: ^spTrackEntry, event: ^spEvent),
-
-		timeScale: cc.float,
-
-		rendererObject: rawptr,
-		userData: rawptr,
-
-		unkeyedState: cc.int,
+	data:           ^spAnimationStateData,
+	tracksCount:    cc.int,
+	tracks:         [^]^spTrackEntry,
+	listener:       #type proc(
+		state: ^spAnimationState,
+		type: spEventType,
+		entry: ^spTrackEntry,
+		event: ^spEvent,
+	),
+	timeScale:      cc.float,
+	rendererObject: rawptr,
+	userData:       rawptr,
+	unkeyedState:   cc.int,
 }
 
 spAnimationStateData :: struct {
-		skeletonData: ^spSkeletonData,
-		defaultMix: cc.float,
-		entries: rawptr,
+	skeletonData: ^spSkeletonData,
+	defaultMix:   cc.float,
+	entries:      rawptr,
 }
 
 spAlphaTimeline :: struct {
-		super: spCurveTimeline1,
-		slotIndex: cc.int,
+	super:     spCurveTimeline1,
+	slotIndex: cc.int,
 }
 
 spAtlas :: struct {
-		pages: [^]spAtlasPage,
-		regions: [^]spAtlasRegion,
-
-		rendererObject: rawptr,
+	pages:          [^]spAtlasPage,
+	regions:        [^]spAtlasRegion,
+	rendererObject: rawptr,
 }
 
+
 spAtlasPage :: struct {
-		atlas: ^spAtlas,
-		name: cstring,
-		format: spAtlasFormat,
-		minFilter, magFilter: spAtlasFilter,
-		uWrap, vWrap: spAtlasWrap,
-
-		rendererObject: rawptr,
-		width, height: cc.int,
-		pma: cc.int,
-
-		next: ^spAtlasPage,
+	atlas:                ^spAtlas,
+	name:                 cstring,
+	format:               spAtlasFormat,
+	minFilter, magFilter: spAtlasFilter,
+	uWrap, vWrap:         spAtlasWrap,
+	rendererObject:       rawptr,
+	width, height:        cc.int,
+	pma:                  cc.bool,
+	next:                 ^spAtlasPage,
 }
 
 spAtlasRegion :: struct {
-		super: spTextureRegion,
-		name: cstring,
-		x, y: cc.int,
-		index: cc.int,
-		splits: [^]cc.int,
-		pads: [^]cc.int,
+	super:     spTextureRegion,
+	name:      cstring,
+	x, y:      cc.int,
+	index:     cc.int,
+	splits:    [^]cc.int,
+	pads:      [^]cc.int,
 
-		// TODO(devon): CHECK ON if ^spKeyValueArray or [^]spKeyValueArray
-		keyValues: ^spKeyValueArray,
-		
-		page: ^spAtlasPage,
-		next: ^spAtlasRegion,
+	// TODO(devon): CHECK ON if ^spKeyValueArray or [^]spKeyValueArray
+	keyValues: ^spKeyValueArray,
+	page:      ^spAtlasPage,
+	next:      ^spAtlasRegion,
 }
 
 spAtlasAttachmentLoader :: struct {
-		super: spAttachmentLoader,
-		atlas: ^spAtlas,
+	super: spAttachmentLoader,
+	atlas: ^spAtlas,
 }
 
 spAttachment :: struct {
@@ -333,9 +329,9 @@ spAttachmentLoader :: struct {
 }
 
 spAttachmentTimeline :: struct {
-		super: spTimeline,
-		slotIndex: cc.int,
-		attachmentNames: [^]cstring,
+	super:           spTimeline,
+	slotIndex:       cc.int,
+	attachmentNames: [^]cstring,
 }
 
 spBone :: struct {
@@ -350,8 +346,8 @@ spBone :: struct {
 	shearX, shearY, ashearX, ashearY: cc.float,
 	a, b, c, d:                       cc.float,
 	worldX, worldY:                   cc.float,
-	sorted:                           cc.int,
-	active:                           cc.int,
+	sorted:                           cc.bool,
+	active:                           cc.bool,
 }
 
 spBoneData :: struct {
@@ -364,7 +360,7 @@ spBoneData :: struct {
 	scaleX, scaleY: cc.float,
 	shearX, shearY: cc.float,
 	transformMode:  spTransformMode,
-	skinRequired:   cc.int,
+	skinRequired:   cc.bool,
 	color:          spColor,
 }
 
@@ -389,26 +385,26 @@ spColor :: struct {
 }
 
 spCurveTimeline :: struct {
-		super: spTimeline,
-		curves: ^spFloatArray,
+	super:  spTimeline,
+	curves: ^spFloatArray,
 }
 
 
-spCurveTimeline1 ::spCurveTimeline
-spCurveTimeline2 ::spCurveTimeline
+spCurveTimeline1 :: spCurveTimeline
+spCurveTimeline2 :: spCurveTimeline
 
 spDeformTimeline :: struct {
-		super: spCurveTimeline,
-		frameVerticesCount: cc.int,
-		frameVertices: [^][^]cc.float,
-		slotIndex: cc.int,
-		attachment: ^spAttachment,
+	super:              spCurveTimeline,
+	frameVerticesCount: cc.int,
+	frameVertices:      [^][^]cc.float,
+	slotIndex:          cc.int,
+	attachment:         ^spAttachment,
 }
 
 spDrawOrderTimeline :: struct {
-		super: spTimeline,
-		drawOrders: [^][^]cc.int,
-		slotsCount: cc.int,
+	super:      spTimeline,
+	drawOrders: [^][^]cc.int,
+	slotsCount: cc.int,
 }
 
 spEventData :: struct {
@@ -432,8 +428,8 @@ spEvent :: struct {
 }
 
 spEventTimeline :: struct {
-		super: spTimeline,
-		events: [^]^spEvent,
+	super:  spTimeline,
+	events: [^]^spEvent,
 }
 
 spIkConstraint :: struct {
@@ -442,36 +438,36 @@ spIkConstraint :: struct {
 	bones:         [^]^spBone,
 	target:        ^spBone,
 	bendDirection: cc.int,
-	compress:      cc.int,
-	stretch:       cc.int,
+	compress:      cc.bool,
+	stretch:       cc.bool,
 	mix:           cc.float,
 	softness:      cc.float,
-	active:        cc.int,
+	active:        cc.bool,
 }
 
 spIkConstraintData :: struct {
 	name:          cstring,
 	order:         cc.int,
-	skinRequired:  cc.int,
+	skinRequired:  cc.bool,
 	bonesCount:    cc.int,
 	bones:         [^]^spBoneData,
 	target:        ^spBoneData,
 	bendDirection: cc.int,
-	compress:      cc.int,
-	stretch:       cc.int,
-	uniform:       cc.int,
+	compress:      cc.bool,
+	stretch:       cc.bool,
+	uniform:       cc.bool,
 	mix:           cc.float,
 	softness:      cc.float,
 }
 
 spIkConstraintTimeline :: struct {
-		super: spCurveTimeline,
-		ikConstraintIndex: cc.int,
+	super:             spCurveTimeline,
+	ikConstraintIndex: cc.int,
 }
 
 spKeyValue :: struct {
-		name: cstring,
-		values: [5]cc.float,
+	name:   cstring,
+	values: [5]cc.float,
 }
 
 spMeshAttachment :: struct {
@@ -496,8 +492,8 @@ spPathAttachment :: struct {
 	super:         spVertexAttachment,
 	lengthsLength: cc.int,
 	lengths:       [^]cc.float,
-	closed:        cc.int,
-	constantSpeed: cc.int,
+	closed:        cc.bool,
+	constantSpeed: cc.bool,
 	color:         spColor,
 }
 
@@ -521,13 +517,13 @@ spPathConstraint :: struct {
 	lengthsCount:   cc.int,
 	lengths:        [^]cc.float,
 	segments:       [10]cc.float,
-	active:         cc.int,
+	active:         cc.bool,
 }
 
 spPathConstraintData :: struct {
 	name:           cstring,
 	order:          cc.int,
-	skinRequired:   cc.int,
+	skinRequired:   cc.bool,
 	bonesCount:     cc.int,
 	bones:          [^]^spBoneData,
 	target:         ^spSlotData,
@@ -542,18 +538,18 @@ spPathConstraintData :: struct {
 }
 
 spPathConstraintMixTimeline :: struct {
-		super: spCurveTimeline,
-		pathConstraintIndex: cc.int,
+	super:               spCurveTimeline,
+	pathConstraintIndex: cc.int,
 }
 
 spPathConstraintPositionTimeline :: struct {
-		super: spCurveTimeline,
-		pathConstraintIndex: cc.int,
+	super:               spCurveTimeline,
+	pathConstraintIndex: cc.int,
 }
 
 spPathConstraintSpacingTimeline :: struct {
-		super: spCurveTimeline,
-		pathConstraintIndex: cc.int,
+	super:               spCurveTimeline,
+	pathConstraintIndex: cc.int,
 }
 
 spPointAttachment :: struct {
@@ -572,58 +568,58 @@ spPolygon :: struct {
 spPropertyId :: cc.uint64_t
 
 spRegionAttachment :: struct {
-	super:           spAttachment,
-	path:            cstring,
-	x, y:            cc.float,
-	scaleX, scaleY:  cc.float,
-	rotation:        cc.float,
-	width, height:   cc.float,
-	color:           spColor,
+	super:          spAttachment,
+	path:           cstring,
+	x, y:           cc.float,
+	scaleX, scaleY: cc.float,
+	rotation:       cc.float,
+	width, height:  cc.float,
+	color:          spColor,
 	rendererObject: rawptr,
-	region:          ^spTextureRegion,
-	sequence:        ^spSequence,
-	offset:          [8]cc.float,
-	uvs:             [8]cc.float,
+	region:         ^spTextureRegion,
+	sequence:       ^spSequence,
+	offset:         [8]cc.float,
+	uvs:            [8]cc.float,
 }
 
 spRGBATimeline :: struct {
-		super: spCurveTimeline2,
-		slotIndex: cc.int,
+	super:     spCurveTimeline2,
+	slotIndex: cc.int,
 }
 
 spRGBA2Timeline :: struct {
-		super: spCurveTimeline,
-		slotIndex: cc.int,
+	super:     spCurveTimeline,
+	slotIndex: cc.int,
 }
 
 spRGBTimeline :: struct {
-		super: spCurveTimeline2,
-		slotIndex: cc.int,
+	super:     spCurveTimeline2,
+	slotIndex: cc.int,
 }
 
 spRGB2Timeline :: struct {
-		super: spCurveTimeline,
-		slotIndex: cc.int,
+	super:     spCurveTimeline,
+	slotIndex: cc.int,
 }
 
 spRotateTimeline :: struct {
-		super: spCurveTimeline1,
-		boneIndex: cc.int,
+	super:     spCurveTimeline1,
+	boneIndex: cc.int,
 }
 
 spScaleTimeline :: struct {
-		super: spCurveTimeline2,
-		boneIndex: cc.int,
+	super:     spCurveTimeline2,
+	boneIndex: cc.int,
 }
 
 spScaleXTimeline :: struct {
-		super: spCurveTimeline1,
-		boneIndex: cc.int,
+	super:     spCurveTimeline1,
+	boneIndex: cc.int,
 }
 
 spScaleYTimeline :: struct {
-		super: spCurveTimeline1,
-		boneIndex: cc.int,
+	super:     spCurveTimeline1,
+	boneIndex: cc.int,
 }
 
 spSequence :: struct {
@@ -635,24 +631,24 @@ spSequence :: struct {
 }
 
 spSequenceTimeline :: struct {
-		super: spTimeline,
-		slotIndex: cc.int,
-		attachment: ^spAttachment,
+	super:      spTimeline,
+	slotIndex:  cc.int,
+	attachment: ^spAttachment,
 }
 
 spShearTimeline :: struct {
-		super: spCurveTimeline2,
-		boneIndex: cc.int,
+	super:     spCurveTimeline2,
+	boneIndex: cc.int,
 }
 
 spShearXTimeline :: struct {
-		super: spCurveTimeline1,
-		boneIndex: cc.int,
+	super:     spCurveTimeline1,
+	boneIndex: cc.int,
 }
 
 spShearYTimeline :: struct {
-		super: spCurveTimeline1,
-		boneIndex: cc.int,
+	super:     spCurveTimeline1,
+	boneIndex: cc.int,
 }
 
 spSkeleton :: struct {
@@ -785,79 +781,76 @@ spTextureRegion :: struct {
 }
 
 _spTimelineVtable :: struct {
-		apply: #type proc(self: ^spTimeline, skeleton: ^spSkeleton, 
-						lastTime: cc.float, time: cc.float, firedEvents: [^]^spEvent,
-						eventsCount: [^]cc.int, alpha: cc.float, blend: spMixBlend,
-						direction: spMixDirection),
-		dispose: #type proc(self: ^spTimeline),
-		setBezier: #type proc(self: ^spTimeline, bezier: cc.int, frame: cc.int,
-						value: cc.float, time1: cc.float, value1: cc.float,
-						cx1: cc.float, cy1: cc.float, cx2: cc.float, cy2: cc.float,
-						time2: cc.float, value2: cc.float),
+	apply:     #type proc(
+		self: ^spTimeline,
+		skeleton: ^spSkeleton,
+		lastTime: cc.float,
+		time: cc.float,
+		firedEvents: [^]^spEvent,
+		eventsCount: [^]cc.int,
+		alpha: cc.float,
+		blend: spMixBlend,
+		direction: spMixDirection,
+	),
+	dispose:   #type proc(self: ^spTimeline),
+	setBezier: #type proc(
+		self: ^spTimeline,
+		bezier: cc.int,
+		frame: cc.int,
+		value: cc.float,
+		time1: cc.float,
+		value1: cc.float,
+		cx1: cc.float,
+		cy1: cc.float,
+		cx2: cc.float,
+		cy2: cc.float,
+		time2: cc.float,
+		value2: cc.float,
+	),
 }
 
 spTimeline :: struct {
-		vtable: _spTimelineVtable,
-		propertyIds: [SP_MAX_PROPERTY_IDS]spPropertyId,
-		propertyIdsCount: cc.int,
-
-		frames: ^spFloatArray,
-		frameCount: cc.int,
-		frameEntries: cc.int,
-		type: spTimelineType,
+	vtable:           _spTimelineVtable,
+	propertyIds:      [SP_MAX_PROPERTY_IDS]spPropertyId,
+	propertyIdsCount: cc.int,
+	frames:           ^spFloatArray,
+	frameCount:       cc.int,
+	frameEntries:     cc.int,
+	type:             spTimelineType,
 }
 
 spTrackEntry :: struct {
-		animation: ^spAnimation,
-		previous: ^spTrackEntry,
-		next: ^spTrackEntry,
-		mixingFrom: ^spTrackEntry,
-		mixingTo: ^spTrackEntry,
-
-		listener: #type proc(state: ^spAnimationState, type: spEventType, entry: ^spTrackEntry, event: ^spEvent),
-
-		trackIndex: cc.int,
-		loop: cc.int,
-		holdPrevious: cc.int,
-		reverse: cc.int,
-		shortestRotation: cc.int,
-
-		eventThreshold, attachmentThreshold, drawOrderThreshold: cc.float,
-		animationStart, animationEnd, animationLast, nextAnimationLast: cc.float,
-		delay: cc.float,
-		trackTime, trackLast, nextTrackLast, trackEnd: cc.float,
-		timeScale: cc.float,
-		alpha: cc.float,
-		mixTime, mixDuration: cc.float,
-		interruptAlpha, totalAlpha: cc.float,
-
-		mixBlend: spMixBlend,
-		timelineMode: ^spIntArray,
-		timelineHoldMix: ^spTrackEntryArray,
-		timelinesRotation: [^]cc.float,
-		timelinesRotationCount: cc.int,
-		
-		rendererObject: rawptr,
-		userData: rawptr,
-}		
-
-spTransformConstraintData :: struct {
-	name:                       cstring,
-	order:                      cc.int,
-	skinRequired:               cc.int,
-	bonesCount:                 cc.int,
-	bones:                      [^]^spBoneData,
-	target:                     ^spBoneData,
-	mixRotate:                  cc.float,
-	minX, minY:                 cc.float,
-	minScaleX, minScaleY:       cc.float,
-	mixShearY:                  cc.float,
-	offsetRotation:             cc.float,
-	offsetX, offsetY:           cc.float,
-	offsetScaleX, offsetScaleY: cc.float,
-	offsetShearY:               cc.float,
-	relative:                   cc.int,
-	local:                      cc.int,
+	animation:                                                      ^spAnimation,
+	previous:                                                       ^spTrackEntry,
+	next:                                                           ^spTrackEntry,
+	mixingFrom:                                                     ^spTrackEntry,
+	mixingTo:                                                       ^spTrackEntry,
+	listener:                                                       #type proc(
+		state: ^spAnimationState,
+		type: spEventType,
+		entry: ^spTrackEntry,
+		event: ^spEvent,
+	),
+	trackIndex:                                                     cc.bool,
+	loop:                                                           cc.bool,
+	holdPrevious:                                                   cc.bool,
+	reverse:                                                        cc.bool,
+	shortestRotation:                                               cc.bool,
+	eventThreshold, attachmentThreshold, drawOrderThreshold:        cc.float,
+	animationStart, animationEnd, animationLast, nextAnimationLast: cc.float,
+	delay:                                                          cc.float,
+	trackTime, trackLast, nextTrackLast, trackEnd:                  cc.float,
+	timeScale:                                                      cc.float,
+	alpha:                                                          cc.float,
+	mixTime, mixDuration:                                           cc.float,
+	interruptAlpha, totalAlpha:                                     cc.float,
+	mixBlend:                                                       spMixBlend,
+	timelineMode:                                                   ^spIntArray,
+	timelineHoldMix:                                                ^spTrackEntryArray,
+	timelinesRotation:                                              [^]cc.float,
+	timelinesRotationCount:                                         cc.int,
+	rendererObject:                                                 rawptr,
+	userData:                                                       rawptr,
 }
 
 spTransformConstraint :: struct {
@@ -869,27 +862,46 @@ spTransformConstraint :: struct {
 	mixX, mixY:           cc.float,
 	mixScaleX, mixScaleY: cc.float,
 	mixShearY:            cc.float,
-	active:               cc.int,
+	active:               cc.bool,
+}
+
+spTransformConstraintData :: struct {
+	name:                       cstring,
+	order:                      cc.int,
+	skinRequired:               cc.bool,
+	bonesCount:                 cc.int,
+	bones:                      [^]^spBoneData,
+	target:                     ^spBoneData,
+	mixRotate:                  cc.float,
+	minX, minY:                 cc.float,
+	minScaleX, minScaleY:       cc.float,
+	mixShearY:                  cc.float,
+	offsetRotation:             cc.float,
+	offsetX, offsetY:           cc.float,
+	offsetScaleX, offsetScaleY: cc.float,
+	offsetShearY:               cc.float,
+	relative:                   cc.bool,
+	local:                      cc.bool,
 }
 
 spTransformConstraintTimeline :: struct {
-		super: spCurveTimeline,
-		transformConstraintIndex: cc.int,
+	super:                    spCurveTimeline,
+	transformConstraintIndex: cc.int,
 }
 
 spTranslateTimeline :: struct {
-		super: spCurveTimeline2,
-		boneIndex: cc.int,
+	super:     spCurveTimeline2,
+	boneIndex: cc.int,
 }
 
 spTranslateXTimeline :: struct {
-		super: spCurveTimeline1,
-		boneIndex: cc.int,
+	super:     spCurveTimeline1,
+	boneIndex: cc.int,
 }
 
 spTranslateYTimeline :: struct {
-		super: spCurveTimeline1,
-		boneIndex: cc.int,
+	super:     spCurveTimeline1,
+	boneIndex: cc.int,
 }
 
 spTriangulator :: struct {
@@ -981,25 +993,25 @@ spTextureRegionArray :: struct {
 }
 
 spKeyValueArray :: struct {
-size:     cc.int,
+	size:     cc.int,
 	capacity: cc.int,
 	items:    [^]spKeyValue,
 }
 
 spTrackEntryArray :: struct {
-size:     cc.int,
+	size:     cc.int,
 	capacity: cc.int,
 	items:    [^]^spTrackEntry,
 }
 
 spPropertyIdArray :: struct {
-size:     cc.int,
+	size:     cc.int,
 	capacity: cc.int,
 	items:    [^]spPropertyId,
 }
 
 spTimelineArray :: struct {
-size:     cc.int,
+	size:     cc.int,
 	capacity: cc.int,
 	items:    [^]^spTimeline,
 }
@@ -1011,17 +1023,213 @@ size:     cc.int,
 
 @(default_calling_convention = "c")
 foreign lib {
+	// [Animation.h] ---
+
+	// [AnimationState.h] ---
+
+	// [AnimationStateData.h] ---
+
+	// [Array.h] ---
+
+	// NOTE(devon): ARRAY DEC TEMPLATE
+	// name##_create :: proc(initialCapacity: cc.int) -> ^name ---
+	// name##_dispose :: proc(self: ^name) ---
+	// name##_clear :: proc(self: ^name) ---
+	// name##_setSize :: proc(self: ^name, newSize: cc.int) -> ^name ---
+	// name##_ensureCapacity :: proc(self: ^name, newCapacity: cc.int) ---
+	// name##_add :: proc(self: ^name, value: T) ---
+	// name##_addAll :: proc(self: ^name, other: ^name) ---
+	// name##_addAllValues :: proc(self: ^name, values: [^]T, offset: cc.int, count: cc.int) ---
+	// name##_removeAt :: proc(self: ^name, index: cc.int) ---
+	// name##_contains :: proc(self: ^name, value: T) -> cc.bool ---
+	// name##_pop :: proc(self:^name) -> T ---
+	// name##_peek :: proc(self: ^name) -> T ---
+
+	// [Atlas.h] ---
+
+	// [AtlasAttachmentLoader.h] ---
+
+	// [Attachment.h] ---
+
+	// [AttachmentLoader.h] ---
+
+	// [Bone.h] ---
+
+	// [BoneData.h] ---
+
+	// [BoundingBoxAttachment.h] ---
+
+	// [ClippingAttachment.h] ---
+
 	// [Color.h] ---
 	spColor_create :: proc() -> ^spColor ---
 	spColor_dispose :: proc(self: ^spColor) ---
 	spColor_setFromFloats :: proc(color: ^spColor, r: cc.float, g: cc.float, b: cc.float, a: cc.float) ---
 
+	// [Debug.h] ---
+
+	// [Event.h] ---
 
 	// [EventData.h] ---
 	spEventData_create :: proc(name: cstring) -> ^spEventData ---
 	spEventData_dispose :: proc(self: ^spEventData) ---
 
+	// [extension.h] ---
 
+	// [IkConstraint.h] ---
+
+	// [IkConstraintData.h] ---
+
+	// [MeshAttachment.h] ---
+
+	// [PathAttachment.h] ---
+
+	// [PointConstraint.h] ---
+
+	// [PointConstraintData.h] ---
+
+	// [PointAttachment.h] ---
+
+	// [RegionAttachment.h] ---
+
+	// [Sequence.h] ---
+
+	// [Skeleton.h] ---
+
+	// [SkeletonBinary.h] ---
+
+	// [SkeletonBounds.h] ---
+
+	// [SkeletonClipping.h] ---
+	spSkeletonClipping_create :: proc() -> ^spSkeletonClipping ---
+	spSkeletonClipping_clipStart :: proc(self: ^spSkeletonClipping, slot: ^spSlot, clip: ^spClippingAttachment) -> cc.int ---
+	spSkeletonClipping_clipEnd :: proc(self: ^spSkeletonClipping, slot: ^spSlot) ---
+	spSkeletonClipping_clipEnd2 :: proc(self: ^spSkeletonClipping) ---
+	spSkeletonClipping_isClipping :: proc(self: ^spSkeletonClipping) -> cc.bool ---
+	spSkeletonClipping_clipTriangles :: proc(self: ^spSkeletonClipping, vertices: [^]cc.float, verticesLength: cc.int, triangles: [^]cc.ushort, trianglesLength: cc.int, uvs: [^]cc.float, stride: cc.int) ---
+	spSkeletonClipping_dispose :: proc(self: ^spSkeletonClipping) ---
+
+	// [SkeletonData.h] ---
+	spSkeletonData_create :: proc() -> ^spSkeletonData ---
+	spSkeletonData_dispose :: proc(self: ^spSkeletonData) ---
+	spSkeletonData_findBone :: proc(self: ^spSkeletonData, boneName: cstring) -> ^spBoneData ---
+	spSkeletonData_findSlot :: proc(self: ^spSkeletonData, slotName: cstring) -> ^spSlotData ---
+	spSkeletonData_findSkin :: proc(self: ^spSkeletonData, skinName: cstring) -> ^spSkin ---
+	spSkeletonData_findEvent :: proc(self: ^spSkeletonData, eventName: cstring) -> ^spEventData ---
+	spSkeletonData_findAnimation :: proc(self: ^spSkeletonData, animationName: cstring) -> ^spAnimation ---
+	spSkeletonData_findIkConstraint :: proc(self: ^spSkeletonData, constraintName: cstring) -> ^spIkConstraintData ---
+	spSkeletonData_findTransformConstraint :: proc(self: ^spSkeletonData, constraintName: cstring) -> ^spTransformConstraintData ---
+	spSkeletonData_findPathConstraint :: proc(self: ^spSkeletonData, constraintName: cstring) -> ^spPathConstraintData ---
+
+	// [SkeletonJson.h] ---
+	spSkeletonJson_createWithLoader :: proc(attachmentLoader: ^spAttachmentLoader) -> ^spSkeletonJson ---
+	spSkeletonJson_create :: proc(atlas: ^spAtlas) -> ^spSkeletonJson ---
+	spSkeletonJson_dispose :: proc(self: ^spSkeletonJson) ---
+	spSkeletonJson_readSkeletonData :: proc(self: ^spSkeletonJson, json: cstring) -> ^spSkeletonData ---
+	spSkeletonJson_readSkeletonDataFile :: proc(self: ^spSkeletonJson, path: cstring) -> ^spSkeletonData ---
+
+	// [Skin.h] ---
+	spSkin_create :: proc(name: cstring) -> ^spSkin ---
+	spSkin_dispose :: proc(self: ^spSkin) ---
+	/* The Skin owns the attachment. */
+	spSkin_setAttachment :: proc(self: ^spSkin, slotIndex: cc.int, name: cstring, attachment: ^spAttachment) ---
+	/* Returns 0 if the attachment was not found. */
+	spSkin_getAttachment :: proc(self: ^spSkin, slotIndex: cc.int, name: cstring) -> ^spAttachment ---
+	/* Returns 0 if the slot or attachment was not found. */
+	spSkin_getAttachmentName :: proc(self: ^spSkin, slotIndex: cc.int, attachmentIndex: cc.int) -> cstring ---
+	/** Attach each attachment in this skin if the corresponding attachment in oldSkin is currently attached. */
+	spSkin_attachAll :: proc(self: ^spSkin, skeleton: ^spSkeleton, oldspSkin: ^spSkin) ---
+	/** Adds all attachments, bones, and constraints from the specified skin to this skin. */
+	spSkin_addSkin :: proc(self: ^spSkin, other: ^spSkin) ---
+	/** Adds all attachments, bones, and constraints from the specified skin to this skin. Attachments are deep copied. */
+	spSkin_copySkin :: proc(self: ^spSkin, other: ^spSkin) ---
+	/** Returns all attachments in this skin. */
+	spSkin_getAttachments :: proc(self: ^spSkin) -> ^spSkinEntry ---
+	/** Clears all attachments, bones, and constraints. */
+	spSkin_clear :: proc(self: ^spSkin) ---
+
+	spBoneDataArray_create :: proc(initialCapacity: cc.int) -> ^spBoneDataArray ---
+	spBoneDataArray_dispose :: proc(self: ^spBoneDataArray) ---
+	spBoneDataArray_clear :: proc(self: ^spBoneDataArray) ---
+	spBoneDataArray_setSize :: proc(self: ^spBoneDataArray, newSize: cc.int) -> ^spBoneDataArray ---
+	spBoneDataArray_ensureCapacity :: proc(self: ^spBoneDataArray, newCapacity: cc.int) ---
+	spBoneDataArray_add :: proc(self: ^spBoneDataArray, value: ^spBoneData) ---
+	spBoneDataArray_addAll :: proc(self: ^spBoneDataArray, other: ^spBoneDataArray) ---
+	spBoneDataArray_addAllValues :: proc(self: ^spBoneDataArray, values: [^]^spBoneData, offset: cc.int, count: cc.int) ---
+	spBoneDataArray_removeAt :: proc(self: ^spBoneDataArray, index: cc.int) ---
+	spBoneDataArray_contains :: proc(self: ^spBoneDataArray, value: ^spBoneData) -> cc.bool ---
+	spBoneDataArray_pop :: proc(self: ^spBoneDataArray) -> ^spBoneData ---
+	spBoneDataArray_peek :: proc(self: ^spBoneDataArray) -> ^spBoneData ---
+
+	spIkConstraintDataArray_create :: proc(initialCapacity: cc.int) -> ^spIkConstraintDataArray ---
+	spIkConstraintDataArray_dispose :: proc(self: ^spIkConstraintDataArray) ---
+	spIkConstraintDataArray_clear :: proc(self: ^spIkConstraintDataArray) ---
+	spIkConstraintDataArray_setSize :: proc(self: ^spIkConstraintDataArray, newSize: cc.int) -> ^spIkConstraintDataArray ---
+	spIkConstraintDataArray_ensureCapacity :: proc(self: ^spIkConstraintDataArray, newCapacity: cc.int) ---
+	spIkConstraintDataArray_add :: proc(self: ^spIkConstraintDataArray, value: ^spIkConstraintData) ---
+	spIkConstraintDataArray_addAll :: proc(self: ^spIkConstraintDataArray, other: ^spIkConstraintDataArray) ---
+	spIkConstraintDataArray_addAllValues :: proc(self: ^spIkConstraintDataArray, values: [^]^spIkConstraintData, offset: cc.int, count: cc.int) ---
+	spIkConstraintDataArray_removeAt :: proc(self: ^spIkConstraintDataArray, index: cc.int) ---
+	spIkConstraintDataArray_contains :: proc(self: ^spIkConstraintDataArray, value: ^spIkConstraintData) -> cc.bool ---
+	spIkConstraintDataArray_pop :: proc(self: ^spIkConstraintDataArray) -> ^spIkConstraintData ---
+	spIkConstraintDataArray_peek :: proc(self: ^spIkConstraintDataArray) -> ^spIkConstraintData ---
+
+	spTransformConstraintDataArray_create :: proc(initialCapacity: cc.int) -> ^spTransformConstraintDataArray ---
+	spTransformConstraintDataArray_dispose :: proc(self: ^spTransformConstraintDataArray) ---
+	spTransformConstraintDataArray_clear :: proc(self: ^spTransformConstraintDataArray) ---
+	spTransformConstraintDataArray_setSize :: proc(self: ^spTransformConstraintDataArray, newSize: cc.int) -> ^spTransformConstraintDataArray ---
+	spTransformConstraintDataArray_ensureCapacity :: proc(self: ^spTransformConstraintDataArray, newCapacity: cc.int) ---
+	spTransformConstraintDataArray_add :: proc(self: ^spTransformConstraintDataArray, value: ^spTransformConstraintData) ---
+	spTransformConstraintDataArray_addAll :: proc(self: ^spTransformConstraintDataArray, other: ^spTransformConstraintDataArray) ---
+	spTransformConstraintDataArray_addAllValues :: proc(self: ^spTransformConstraintDataArray, values: [^]^spTransformConstraintData, offset: cc.int, count: cc.int) ---
+	spTransformConstraintDataArray_removeAt :: proc(self: ^spTransformConstraintDataArray, index: cc.int) ---
+	spTransformConstraintDataArray_contains :: proc(self: ^spTransformConstraintDataArray, value: ^spTransformConstraintData) -> cc.bool ---
+	spTransformConstraintDataArray_pop :: proc(self: ^spTransformConstraintDataArray) -> ^spTransformConstraintData ---
+	spTransformConstraintDataArray_peek :: proc(self: ^spTransformConstraintDataArray) -> ^spTransformConstraintData ---
+
+	spPathConstraintDataArray_create :: proc(initialCapacity: cc.int) -> ^spPathConstraintDataArray ---
+	spPathConstraintDataArray_dispose :: proc(self: ^spPathConstraintDataArray) ---
+	spPathConstraintDataArray_clear :: proc(self: ^spPathConstraintDataArray) ---
+	spPathConstraintDataArray_setSize :: proc(self: ^spPathConstraintDataArray, newSize: cc.int) -> ^spPathConstraintDataArray ---
+	spPathConstraintDataArray_ensureCapacity :: proc(self: ^spPathConstraintDataArray, newCapacity: cc.int) ---
+	spPathConstraintDataArray_add :: proc(self: ^spPathConstraintDataArray, value: ^spPathConstraintData) ---
+	spPathConstraintDataArray_addAll :: proc(self: ^spPathConstraintDataArray, other: ^spPathConstraintDataArray) ---
+	spPathConstraintDataArray_addAllValues :: proc(self: ^spPathConstraintDataArray, values: [^]^spPathConstraintData, offset: cc.int, count: cc.int) ---
+	spPathConstraintDataArray_removeAt :: proc(self: ^spPathConstraintDataArray, index: cc.int) ---
+	spPathConstraintDataArray_contains :: proc(self: ^spPathConstraintDataArray, value: ^spPathConstraintData) -> cc.bool ---
+	spPathConstraintDataArray_pop :: proc(self: ^spPathConstraintDataArray) -> ^spPathConstraintData ---
+	spPathConstraintDataArray_peek :: proc(self: ^spPathConstraintDataArray) -> ^spPathConstraintData ---
+
+
+	// [Slot.h] ---
+	spSlot_create :: proc(data: ^spSlotData, bone: ^spBone) -> ^spSlot ---
+	spSlot_dispose :: proc(self: ^spSlot) ---
+	spSlot_setAttachment :: proc(self: ^spSlot, attachment: ^spAttachment) ---
+	spSlot_setToSetupPose :: proc(self: ^spSlot) ---
+
+	// [SlotData.h] ---
+	spSlotData_create :: proc(index: cc.int, name: cstring, boneData: ^spBoneData) -> ^spSlotData ---
+	spSlotData_dispose :: proc(self: ^spSlotData) ---
+	spSlotData_setAttachmentName :: proc(self: ^spSlotData, attachmentName: cstring) ---
+
+	// [TransformConstraint.h] ---
+	spTransformConstraint_create :: proc(data: ^spTransformConstraintData, skeleton: ^spSkeleton) -> ^spTransformConstraint ---
+	spTransformConstraint_dispose :: proc(self: ^spTransformConstraint) ---
+	spTransformConstraint_update :: proc(self: ^spTransformConstraint) ---
+
+	// [TransformConstraintData.h] ---
+	spTransformConstraintData_create :: proc(name: cstring) -> ^spTransformConstraintData ---
+	spTransformConstraintData_dispose :: proc(self: ^spTransformConstraintData) ---
+
+	// [Triangulator.h] ---
+	spTriangulator_create :: proc() -> ^spTriangulator ---
+	spTriangulator_triangulate :: proc(self: ^spTriangulator, verticesArray: ^spFloatArray) -> ^spShortArray ---
+	spTriangulator_decompose :: proc(self: ^spTriangulator, verticesArray: ^spFloatArray, triangles: ^spShortArray) -> ^spArrayFloatArray ---
+	spTriangulator_dispose :: proc(self: ^spTriangulator) ---
+
+	// [VertexAttachment.h] ---
+	spVertexAttachment_computeWorldVertices :: proc(self: ^spVertexAttachment, slot: ^spSlot, start: cc.int, count: cc.int, worldVertices: [^]cc.float, offset: cc.int, stride: cc.int) ---
+	spVertexAttachment_copyTo :: proc(self: ^spVertexAttachment, other: ^spVertexAttachment) ---
 }
 
 // void _spAtlasPage_createTexture(spAtlasPage *self, const char *path);
