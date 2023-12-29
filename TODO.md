@@ -1,23 +1,23 @@
 ## COMPLETED
-- [ ] Structs
-    - [ ] Animation
-    - [ ] AnimationState
-    - [ ] AnimationStateData
+- [x] Structs
+    - [x] Animation
+    - [x] AnimationState
+    - [x] AnimationStateData
     - [x] Array
-    - [ ] Atlas
-    - [ ] AtlasAttachmentLoader
+    - [x] Atlas
+    - [x] AtlasAttachmentLoader
     - [x] Attachment
     - [x] AttachmentLoader
-    - [ ] Bone
+    - [x] Bone
     - [x] BoneData
     - [x] BoundingBoxAttachment
     - [x] ClippingAttachment
     - [x] Color
-    - [ ] Debug
-    - [ ] dll
+    - [x] Debug
+    - [x] dll
     - [x] Event
     - [x] EventData
-    - [ ] exension
+    - [x] exension
     - [x] IKConstraint
     - [x] IKConstraintData
     - [x] MeshAttachment

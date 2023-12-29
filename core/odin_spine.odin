@@ -1,11 +1,11 @@
 package core
 
-import c "core:c"
+import cc "core:c"
 import lc "core:c/libc"
 import "core:fmt"
 
 
-#assert(size_of(rune) == size_of(c.int))
+#assert(size_of(rune) == size_of(cc.int))
 
 // - C Imports -
 // --------------------------------------
@@ -95,19 +95,19 @@ PATH_ROTATE_CHAIN_SCALE :: 2
 
 // - Enum -
 // --------------------------------------
-spMixBlends :: enum c.int {
+spMixBlend :: enum cc.int {
 	SP_MIX_BLEND_SETUP = 0,
 	SP_MIX_BLEND_FIRST,
 	SP_MIX_BLEND_REPLACE,
 	SP_MIX_BLEND_ADD,
 }
 
-spMixDirection :: enum c.int {
+spMixDirection :: enum cc.int {
 	SP_MIX_DIRECTION_IN = 0,
 	SP_MIX_DIRECTION_OUT,
 }
 
-spTimelineType :: enum c.int {
+spTimelineType :: enum cc.int {
 	SP_TIMELINE_ATTACHMENT = 0,
 	SP_TIMELINE_ALPHA,
 	SP_TIMELINE_PATHCONSTRAINTPOSITION,
@@ -135,7 +135,7 @@ spTimelineType :: enum c.int {
 	SP_TIMELINE_EVENT,
 }
 
-spProperty :: enum c.int {
+spProperty :: enum cc.int {
 	SP_PROPERTY_ROTATE                  = 1 << 0,
 	SP_PROPERTY_X                       = 1 << 1,
 	SP_PROPERTY_Y                       = 1 << 2,
@@ -158,7 +158,7 @@ spProperty :: enum c.int {
 	SP_PROPERTY_SEQUENCE                = 1 << 19,
 }
 
-spEventType :: enum c.int {
+spEventType :: enum cc.int {
 	SP_ANIMATION_START = 0,
 	SP_ANIMATION_INTERRUPT,
 	SP_ANIMATION_END,
@@ -167,7 +167,7 @@ spEventType :: enum c.int {
 	SP_ANIMATION_EVENT,
 }
 
-spAtlasFormat :: enum c.int {
+spAtlasFormat :: enum cc.int {
 	SP_ATLAS_UNKNOWN_FORMAT = 0,
 	SP_ATLAS_ALPHA,
 	SP_ATLAS_INTENSITY,
@@ -178,7 +178,7 @@ spAtlasFormat :: enum c.int {
 	SP_ATLAS_RGBA8888,
 }
 
-spAtlasFilter :: enum c.int {
+spAtlasFilter :: enum cc.int {
 	SP_ATLAS_UNKNOWN_FILTER = 0,
 	SP_ATLAS_NEAREST,
 	SP_ATLAS_LINEAR,
@@ -189,13 +189,13 @@ spAtlasFilter :: enum c.int {
 	SP_ATLAS_MIPMAP_LINEAR_LINEAR,
 }
 
-spAtlasWrap :: enum c.int {
+spAtlasWrap :: enum cc.int {
 	SP_ATLAS_MIRROREDREPEAT = 0,
 	SP_ATLAS_CLAMPTOEDGE,
 	SP_ATLAS_REPEAT,
 }
 
-spAttachmentType :: enum c.int {
+spAttachmentType :: enum cc.int {
 	SP_ATTACHMENT_REGION = 0,
 	SP_ATTACHMENT_BOUNDING_BOX,
 	SP_ATTACHMENT_MESH,
@@ -205,7 +205,7 @@ spAttachmentType :: enum c.int {
 	SP_ATTACHMENT_CLIPPING,
 }
 
-spTransformMode :: enum c.int {
+spTransformMode :: enum cc.int {
 	SP_TRANSFORMMODE_NORMAL = 0,
 	SP_TRANSFORMMODE_ONLYTRANSLATION,
 	SP_TRANSFORMMODE_NOROTATIONORREFLECTION,
@@ -213,529 +213,796 @@ spTransformMode :: enum c.int {
 	SP_TRANSFORMMODE_NOSCALEORREFLECTION,
 }
 
-spPositionMode :: enum c.int {
+spPositionMode :: enum cc.int {
 	SP_POSITION_MODE_FIXED = 0,
 	SP_POSITION_MODE_PERCENT,
 }
 
-spSpacingMode :: enum c.int {
+spSpacingMode :: enum cc.int {
 	SP_SPACING_MODE_LENGTH = 0,
 	SP_SPACING_MODE_FIXED,
 	SP_SPACING_MODE_PERCENT,
 	SP_SPACING_MODE_PROPORTIONAL,
 }
 
-spRotateMode :: enum c.int {
+spRotateMode :: enum cc.int {
 	SP_ROTATE_MODE_TANGENT = 0,
 	SP_ROTATE_MODE_CHAIN,
 	SP_ROTATE_MODE_CHAIN_SCALE,
 }
 
-spBlendMode :: enum c.int {
-	SP_BLEND_MODE_NORMAL = 0, 
-	SP_BLEND_MODE_ADDITIVE, 
-	SP_BLEND_MODE_MULTIPLY, 
+spBlendMode :: enum cc.int {
+	SP_BLEND_MODE_NORMAL = 0,
+	SP_BLEND_MODE_ADDITIVE,
+	SP_BLEND_MODE_MULTIPLY,
 	SP_BLEND_MODE_SCREEN,
 }
-
 
 
 // - Structs -
 // --------------------------------------
 
 spAnimation :: struct {
-// TODO(devon): asd
+		name: cstring,
+		duration: cc.float,
+
+		timelines: ^spTimelineArray,
+		timelineIds: ^spPropertyIdArray,
 }
 
-// TODO(devon): Can we change this to a distinct [4]c.float for swizzles?
+spAnimationState :: struct {
+		data: ^spAnimationStateData,
+		
+		tracksCount: cc.int,
+		tracks: [^]^spTrackEntry,
+
+		listener: #type proc(state: ^spAnimationState, type: spEventType, entry: ^spTrackEntry, event: ^spEvent),
+
+		timeScale: cc.float,
+
+		rendererObject: rawptr,
+		userData: rawptr,
+
+		unkeyedState: cc.int,
+}
+
+spAnimationStateData :: struct {
+		skeletonData: ^spSkeletonData,
+		defaultMix: cc.float,
+		entries: rawptr,
+}
+
+spAlphaTimeline :: struct {
+		super: spCurveTimeline1,
+		slotIndex: cc.int,
+}
+
+spAtlas :: struct {
+		pages: [^]spAtlasPage,
+		regions: [^]spAtlasRegion,
+
+		rendererObject: rawptr,
+}
+
+spAtlasPage :: struct {
+		atlas: ^spAtlas,
+		name: cstring,
+		format: spAtlasFormat,
+		minFilter, magFilter: spAtlasFilter,
+		uWrap, vWrap: spAtlasWrap,
+
+		rendererObject: rawptr,
+		width, height: cc.int,
+		pma: cc.int,
+
+		next: ^spAtlasPage,
+}
+
+spAtlasRegion :: struct {
+		super: spTextureRegion,
+		name: cstring,
+		x, y: cc.int,
+		index: cc.int,
+		splits: [^]cc.int,
+		pads: [^]cc.int,
+
+		// TODO(devon): CHECK ON if ^spKeyValueArray or [^]spKeyValueArray
+		keyValues: ^spKeyValueArray,
+		
+		page: ^spAtlasPage,
+		next: ^spAtlasRegion,
+}
+
+spAtlasAttachmentLoader :: struct {
+		super: spAttachmentLoader,
+		atlas: ^spAtlas,
+}
+
+spAttachment :: struct {
+	name:             cstring,
+	type:             spAttachmentType,
+	vtable:           rawptr,
+	refCount:         cc.int,
+	attachmentLoader: ^spAttachmentLoader,
+}
+
+spAttachmentLoader :: struct {
+	error1: cstring,
+	error2: cstring,
+	vtable: rawptr,
+}
+
+spAttachmentTimeline :: struct {
+		super: spTimeline,
+		slotIndex: cc.int,
+		attachmentNames: [^]cstring,
+}
+
+spBone :: struct {
+	data:                             ^spBoneData,
+	skeleton:                         ^spSkeleton,
+	parent:                           ^spBone,
+	childrenCount:                    cc.int,
+	children:                         [^]^spBone,
+	x, y, ax, ay:                     cc.float,
+	rotation, arotation:              cc.float,
+	scaleX, scaleY, ascaleX, ascaleY: cc.float,
+	shearX, shearY, ashearX, ashearY: cc.float,
+	a, b, c, d:                       cc.float,
+	worldX, worldY:                   cc.float,
+	sorted:                           cc.int,
+	active:                           cc.int,
+}
+
+spBoneData :: struct {
+	index:          cc.int,
+	name:           cstring,
+	parent:         ^spBoneData,
+	length:         cc.float,
+	x, y:           cc.float,
+	rotation:       cc.float,
+	scaleX, scaleY: cc.float,
+	shearX, shearY: cc.float,
+	transformMode:  spTransformMode,
+	skinRequired:   cc.int,
+	color:          spColor,
+}
+
+
+spBoundingBoxAttachment :: struct {
+	super: spVertexAttachment,
+	color: spColor,
+}
+
+spClippingAttachment :: struct {
+	super:   spVertexAttachment,
+	endSlot: ^spSlotData,
+	color:   spColor,
+}
+
+// TODO(devon): Can we change this to a distinct [4]cc.float for swizzles?
 spColor :: struct {
-	r: c.float,
-	g: c.float,
-	b: c.float,
-	a: c.float,
+	r: cc.float,
+	g: cc.float,
+	b: cc.float,
+	a: cc.float,
+}
+
+spCurveTimeline :: struct {
+		super: spTimeline,
+		curves: ^spFloatArray,
+}
+
+
+spCurveTimeline1 ::spCurveTimeline
+spCurveTimeline2 ::spCurveTimeline
+
+spDeformTimeline :: struct {
+		super: spCurveTimeline,
+		frameVerticesCount: cc.int,
+		frameVertices: [^][^]cc.float,
+		slotIndex: cc.int,
+		attachment: ^spAttachment,
+}
+
+spDrawOrderTimeline :: struct {
+		super: spTimeline,
+		drawOrders: [^][^]cc.int,
+		slotsCount: cc.int,
 }
 
 spEventData :: struct {
 	name:        cstring,
-	intValue:    c.int,
-	floatValue:  c.float,
+	intValue:    cc.int,
+	floatValue:  cc.float,
 	stringValue: cstring,
 	audioPath:   cstring,
-	volume:      c.float,
-	balance:     c.float,
+	volume:      cc.float,
+	balance:     cc.float,
 }
 
 spEvent :: struct {
-	data: ^spEventData,
-time: c.float,
-intValue: c.int,
-floatValue: c.float,
-stringValue: cstring,
-volume: c.float,
-balance: c.float,
+	data:        ^spEventData,
+	time:        cc.float,
+	intValue:    cc.int,
+	floatValue:  cc.float,
+	stringValue: cstring,
+	volume:      cc.float,
+	balance:     cc.float,
 }
 
-spAttachmentLoader :: struct {
-		error1: cstring,
-		error2: cstring,
-		vtable: rawptr,
-}
-
-spAttachment :: struct {
-		name: cstring,
-		type: spAttachmentType,
-		vtable: rawptr,
-		refCount: c.int,
-		attachmentLoader: ^spAttachmentLoader,
-}
-
-spBoneData :: struct {
-index: c.int,
-	name: cstring,
-	parent: ^spBoneData,
-	length: c.float,
-	x, y: c.float,  
-	rotation: c.float, 
-	scaleX, scaleY: c.float,
-	shearX, shearY: c.float,
-	 transformMode: spTransformMode,
-	skinRequired: c.int,
-	color: spColor,
-}
-
-spBone :: struct {
-// TODO(devon): asd
-}
-
-spBoundingBoxAttachment :: struct {
-		super: spVertexAttachment,
-		color: spColor,
-}
-
-spClippingAttachment :: struct {
-		super: spVertexAttachment,
-		endSlot: ^spSlotData,
-		color: spColor,
+spEventTimeline :: struct {
+		super: spTimeline,
+		events: [^]^spEvent,
 }
 
 spIkConstraint :: struct {
-		data: ^spIkConstraintData,
-		bonesCount: c.int,
-		bones: [^]^spBone,
-		target: ^spBone,
-		bendDirection: c.int,
-		compress: c.int,
-		stretch: c.int,
-		mix: c.float,
-		softness: c.float,
-		active: c.int,
+	data:          ^spIkConstraintData,
+	bonesCount:    cc.int,
+	bones:         [^]^spBone,
+	target:        ^spBone,
+	bendDirection: cc.int,
+	compress:      cc.int,
+	stretch:       cc.int,
+	mix:           cc.float,
+	softness:      cc.float,
+	active:        cc.int,
 }
 
 spIkConstraintData :: struct {
+	name:          cstring,
+	order:         cc.int,
+	skinRequired:  cc.int,
+	bonesCount:    cc.int,
+	bones:         [^]^spBoneData,
+	target:        ^spBoneData,
+	bendDirection: cc.int,
+	compress:      cc.int,
+	stretch:       cc.int,
+	uniform:       cc.int,
+	mix:           cc.float,
+	softness:      cc.float,
+}
+
+spIkConstraintTimeline :: struct {
+		super: spCurveTimeline,
+		ikConstraintIndex: cc.int,
+}
+
+spKeyValue :: struct {
 		name: cstring,
-		order: c.int,
-		skinRequired: c.int,
-		bonesCount: c.int,
-		bones: [^]^spBoneData,
-		target: ^spBoneData,
-		bendDirection: c.int,
-		compress: c.int,
-		stretch: c.int,
-		uniform: c.int,
-		mix: c.float,
-		softness: c.float,
+		values: [5]cc.float,
 }
 
 spMeshAttachment :: struct {
-		super: spVertexAttachment,
-
-		rendererObject: rawptr,
-		region: ^spTextureRegion,
-		sequence: ^spSequence,
-
-		path: cstring,
-
-		regionUVs: [^]c.float,
-		uvs: [^]c.float,
-
-		trianglesCount: c.int,
-		triangles: c.ushort,
-
-		color: spColor,
-
-		hullLength: c.int,
-
-		parentMesh: ^spMeshAttachment,
-
-		edgesCount: c.int,
-		edges: [^]c.int,
-		width, height: c.float,
+	super:          spVertexAttachment,
+	rendererObject: rawptr,
+	region:         ^spTextureRegion,
+	sequence:       ^spSequence,
+	path:           cstring,
+	regionUVs:      [^]cc.float,
+	uvs:            [^]cc.float,
+	trianglesCount: cc.int,
+	triangles:      cc.ushort,
+	color:          spColor,
+	hullLength:     cc.int,
+	parentMesh:     ^spMeshAttachment,
+	edgesCount:     cc.int,
+	edges:          [^]cc.int,
+	width, height:  cc.float,
 }
 
 spPathAttachment :: struct {
-		super: spVertexAttachment,
-		lengthsLength: c.int,
-		lengths: [^]c.float,
-		closed: c.int,
-		constantSpeed: c.int,
-		color: spColor,
+	super:         spVertexAttachment,
+	lengthsLength: cc.int,
+	lengths:       [^]cc.float,
+	closed:        cc.int,
+	constantSpeed: cc.int,
+	color:         spColor,
 }
 
 spPathConstraint :: struct {
-		data: ^spPathConstraintData,
-		bonesCount: c.int,
-		bones: [^]^spBone,
-		target: ^spSlot,
-		position: c.float,
-		spacing: c.float,
-		mixRotate: c.float,
-		mixX, mixY: c.float,
-		
-		spacesCount: c.int,
-		spaces: [^]c.float,
-
-		positionsCount: c.int,
-		positions: [^]c.float,
-
-		worldCount: c.int,
-		world: [^]c.float,
-
-		curvesCount: c.int,
-		curves: [^]c.float,
-
-		lengthsCount: c.int,
-		lengths: [^]c.float,
-
-		segments: [10]c.float,
-
-		active: c.int,
+	data:           ^spPathConstraintData,
+	bonesCount:     cc.int,
+	bones:          [^]^spBone,
+	target:         ^spSlot,
+	position:       cc.float,
+	spacing:        cc.float,
+	mixRotate:      cc.float,
+	mixX, mixY:     cc.float,
+	spacesCount:    cc.int,
+	spaces:         [^]cc.float,
+	positionsCount: cc.int,
+	positions:      [^]cc.float,
+	worldCount:     cc.int,
+	world:          [^]cc.float,
+	curvesCount:    cc.int,
+	curves:         [^]cc.float,
+	lengthsCount:   cc.int,
+	lengths:        [^]cc.float,
+	segments:       [10]cc.float,
+	active:         cc.int,
 }
 
 spPathConstraintData :: struct {
-		name: cstring,
-		order: c.int,
-		skinRequired: c.int,
-		bonesCount: c.int,
-		bones: [^]^spBoneData,
-		target: ^spSlotData,
-		positionMode: spPositionMode,
-		spacingMode: spSpacingMode,
-		rotateMode: spRotateMode,
-		offsetRotation: c.float,
-		position: c.float,
-		spacing: c.float,
-		mixRotate: c.float,
-		mixX, mixY: c.float,
+	name:           cstring,
+	order:          cc.int,
+	skinRequired:   cc.int,
+	bonesCount:     cc.int,
+	bones:          [^]^spBoneData,
+	target:         ^spSlotData,
+	positionMode:   spPositionMode,
+	spacingMode:    spSpacingMode,
+	rotateMode:     spRotateMode,
+	offsetRotation: cc.float,
+	position:       cc.float,
+	spacing:        cc.float,
+	mixRotate:      cc.float,
+	mixX, mixY:     cc.float,
+}
+
+spPathConstraintMixTimeline :: struct {
+		super: spCurveTimeline,
+		pathConstraintIndex: cc.int,
+}
+
+spPathConstraintPositionTimeline :: struct {
+		super: spCurveTimeline,
+		pathConstraintIndex: cc.int,
+}
+
+spPathConstraintSpacingTimeline :: struct {
+		super: spCurveTimeline,
+		pathConstraintIndex: cc.int,
 }
 
 spPointAttachment :: struct {
-		super: spAttachment,
-		x, y: c.float,
-		rotation: c.float,
-		color: spColor,
+	super:    spAttachment,
+	x, y:     cc.float,
+	rotation: cc.float,
+	color:    spColor,
 }
 
 spPolygon :: struct {
-		vertices: [^]c.float,
-		count: c.int,
-		capacity: c.int,
+	vertices: [^]cc.float,
+	count:    cc.int,
+	capacity: cc.int,
 }
 
+spPropertyId :: cc.uint64_t
 
 spRegionAttachment :: struct {
-		super: spAttachment,
-		path: cstring,
-		x, y: c.float,
-		scaleX, scaleY: c.float,
-		rotation: c.float,
-		width, height: c.float,
-		color: spColor,
-		rendererObjeckt: rawptr,
-		region: ^spTextureRegion,
-		sequence: ^spSequence,
+	super:           spAttachment,
+	path:            cstring,
+	x, y:            cc.float,
+	scaleX, scaleY:  cc.float,
+	rotation:        cc.float,
+	width, height:   cc.float,
+	color:           spColor,
+	rendererObject: rawptr,
+	region:          ^spTextureRegion,
+	sequence:        ^spSequence,
+	offset:          [8]cc.float,
+	uvs:             [8]cc.float,
+}
 
-		offset: [8]c.float,
-		uvs: [8]c.float,
+spRGBATimeline :: struct {
+		super: spCurveTimeline2,
+		slotIndex: cc.int,
+}
+
+spRGBA2Timeline :: struct {
+		super: spCurveTimeline,
+		slotIndex: cc.int,
+}
+
+spRGBTimeline :: struct {
+		super: spCurveTimeline2,
+		slotIndex: cc.int,
+}
+
+spRGB2Timeline :: struct {
+		super: spCurveTimeline,
+		slotIndex: cc.int,
+}
+
+spRotateTimeline :: struct {
+		super: spCurveTimeline1,
+		boneIndex: cc.int,
+}
+
+spScaleTimeline :: struct {
+		super: spCurveTimeline2,
+		boneIndex: cc.int,
+}
+
+spScaleXTimeline :: struct {
+		super: spCurveTimeline1,
+		boneIndex: cc.int,
+}
+
+spScaleYTimeline :: struct {
+		super: spCurveTimeline1,
+		boneIndex: cc.int,
 }
 
 spSequence :: struct {
-		id: c.int,
-		start: c.int,
-		digits: c.int,
-		setupIndex: c.int,
-		
-		regions: ^spTextureRegionArray,
+	id:         cc.int,
+	start:      cc.int,
+	digits:     cc.int,
+	setupIndex: cc.int,
+	regions:    ^spTextureRegionArray,
+}
+
+spSequenceTimeline :: struct {
+		super: spTimeline,
+		slotIndex: cc.int,
+		attachment: ^spAttachment,
+}
+
+spShearTimeline :: struct {
+		super: spCurveTimeline2,
+		boneIndex: cc.int,
+}
+
+spShearXTimeline :: struct {
+		super: spCurveTimeline1,
+		boneIndex: cc.int,
+}
+
+spShearYTimeline :: struct {
+		super: spCurveTimeline1,
+		boneIndex: cc.int,
 }
 
 spSkeleton :: struct {
-		data: ^spSkeletonData,
-
-		bonesCount: c.int,
-		bones: [^]^spBone,
-		root: ^spBone,
-
-		slotsCount: c.int,
-		slots: [^]^spSlot,
-		drawOrder: [^]^spSlot,
-
-		ikConstraintsCount: c.int,
-		ikConstraints: [^]^spIkConstraint,
-
-		transformConstraintsCount: c.int,
-		transformConstraints: [^]^spTransformConstraint,
-
-		pathConstraintsCount: c.int,
-		pathConstraints: [^]^spPathConstraint,
-
-		skin: ^spSkin,
-		color: spColor,
-		scaleX, scaleY: c.float,
-		x, y: c.float,
+	data:                      ^spSkeletonData,
+	bonesCount:                cc.int,
+	bones:                     [^]^spBone,
+	root:                      ^spBone,
+	slotsCount:                cc.int,
+	slots:                     [^]^spSlot,
+	drawOrder:                 [^]^spSlot,
+	ikConstraintsCount:        cc.int,
+	ikConstraints:             [^]^spIkConstraint,
+	transformConstraintsCount: cc.int,
+	transformConstraints:      [^]^spTransformConstraint,
+	pathConstraintsCount:      cc.int,
+	pathConstraints:           [^]^spPathConstraint,
+	skin:                      ^spSkin,
+	color:                     spColor,
+	scaleX, scaleY:            cc.float,
+	x, y:                      cc.float,
 }
 
 spSkeletonBinary :: struct {
-		scale: c.float,
-		attachmentLoader: ^spAttachmentLoader,
-		error: cstring,
+	scale:            cc.float,
+	attachmentLoader: ^spAttachmentLoader,
+	error:            cstring,
 }
 
 spSkeletonBounds :: struct {
-		count: c.int,
-		boundingBoxes: [^]^spBoundingBoxAttachment,
-		polygons: [^]^spPolygon,
-		minX, minY: c.float,
-		maxX, maxY: c.float,
+	count:         cc.int,
+	boundingBoxes: [^]^spBoundingBoxAttachment,
+	polygons:      [^]^spPolygon,
+	minX, minY:    cc.float,
+	maxX, maxY:    cc.float,
 }
 
 spSkeletonClipping :: struct {
-		triangulator: ^spTriangulator,
-
-		clippingPolygon	: ^spFloatArray,
-		clipOutput		:  ^spFloatArray,
-		clippedVertices	:  ^spFloatArray,
-		clippedUVs		:  ^spFloatArray,
-		clippedTriangles:  ^spUnsignedShortArray,
-
-		scratch: ^spFloatArray,
-		clipAttachment: ^spClippingAttachment,
-		clippingPolygons: ^spArrayFloatArray,
+	triangulator:     ^spTriangulator,
+	clippingPolygon:  ^spFloatArray,
+	clipOutput:       ^spFloatArray,
+	clippedVertices:  ^spFloatArray,
+	clippedUVs:       ^spFloatArray,
+	clippedTriangles: ^spUnsignedShortArray,
+	scratch:          ^spFloatArray,
+	clipAttachment:   ^spClippingAttachment,
+	clippingPolygons: ^spArrayFloatArray,
 }
 
 spSkeletonData :: struct {
-		version: cstring,
-		hash: cstring,
-		x, y: c.float,
-		width, height: c.float,
-		fps: c.float,
-		imagesPath: cstring,
-		audioPath: cstring,
-		
-		stringsCount: c.int,
-		strings: [^]cstring,
-
-		bonesCount: c.int,
-		bones: [^]^spBoneData,
-
-		slotsCount: c.int,
-		slots: [^]^spSlotData,
-
-		skinsCount: c.int,
-		skins: [^]^spSkin,
-		defaultSkin: ^spSkin,
-
-		eventsCount: c.int,
-		events: [^]^spEventData,
-
-		animationsCount: c.int,
-		animations: [^]^spAnimation,
-
-		ikConstraintsCount: c.int,
-		ikConstraints: [^]^spIkConstraintData,
-
-		transformConstraintsCount: c.int,
-		transformConstraints: [^]^spTransformConstraintData,
-
-		pathConstraintsCount: c.int,
-		pathConstraints: [^]^spPathConstraintData,
+	version:                   cstring,
+	hash:                      cstring,
+	x, y:                      cc.float,
+	width, height:             cc.float,
+	fps:                       cc.float,
+	imagesPath:                cstring,
+	audioPath:                 cstring,
+	stringsCount:              cc.int,
+	strings:                   [^]cstring,
+	bonesCount:                cc.int,
+	bones:                     [^]^spBoneData,
+	slotsCount:                cc.int,
+	slots:                     [^]^spSlotData,
+	skinsCount:                cc.int,
+	skins:                     [^]^spSkin,
+	defaultSkin:               ^spSkin,
+	eventsCount:               cc.int,
+	events:                    [^]^spEventData,
+	animationsCount:           cc.int,
+	animations:                [^]^spAnimation,
+	ikConstraintsCount:        cc.int,
+	ikConstraints:             [^]^spIkConstraintData,
+	transformConstraintsCount: cc.int,
+	transformConstraints:      [^]^spTransformConstraintData,
+	pathConstraintsCount:      cc.int,
+	pathConstraints:           [^]^spPathConstraintData,
 }
 
 spSkeletonJson :: struct {
-		scale: c.float,
-		attachmentLoader: ^spAttachmentLoader,
-		error: cstring,
+	scale:            cc.float,
+	attachmentLoader: ^spAttachmentLoader,
+	error:            cstring,
 }
 
 spSkin :: struct {
-		name: cstring,
-
-		bones: ^spBoneDataArray,
-		ikConstraints: ^spIkConstraintDataArray,
-		transformConstraints: ^spTransformConstraintDataArray,
-		pathConstraints: ^spPathConstraintDataArray,
+	name:                 cstring,
+	bones:                ^spBoneDataArray,
+	ikConstraints:        ^spIkConstraintDataArray,
+	transformConstraints: ^spTransformConstraintDataArray,
+	pathConstraints:      ^spPathConstraintDataArray,
 }
 
 spSkinEntry :: struct {
-		slotIndex: c.int,
-		name: cstring,
-		attachment: ^spAttachment,
-		next: ^spSkinEntry,
+	slotIndex:  cc.int,
+	name:       cstring,
+	attachment: ^spAttachment,
+	next:       ^spSkinEntry,
 }
 
 spSlot :: struct {
-		data: ^spSlotData,
-		bone: ^spBone,
-		color: spColor,
-		darkColor: ^spColor,
-		attachment: ^spAttachment,
-		attachmentState: c.int,
-		deformCapacity: c.int,
-		deformCount: c.int,
-		deform: [^]c.float,
-		sequenceIndex: c.int,
+	data:            ^spSlotData,
+	bone:            ^spBone,
+	color:           spColor,
+	darkColor:       ^spColor,
+	attachment:      ^spAttachment,
+	attachmentState: cc.int,
+	deformCapacity:  cc.int,
+	deformCount:     cc.int,
+	deform:          [^]cc.float,
+	sequenceIndex:   cc.int,
 }
 
 spSlotData :: struct {
-		index: c.int,
-		name: cstring,
-		boneData: ^spBoneData,
-		attachmentName: cstring,
-		color: spColor,
-		darkcolor: ^spColor,
-		blendMode: spBlendMode,
+	index:          cc.int,
+	name:           cstring,
+	boneData:       ^spBoneData,
+	attachmentName: cstring,
+	color:          spColor,
+	darkcolor:      ^spColor,
+	blendMode:      spBlendMode,
 }
 
 spTextureRegion :: struct {
-	rendererObject: rawptr,
-	u, v:              c.float,
-	u2, v2:             c.float,
-	degrees:        c.int,
-	offsetX, ossetY:        c.float,
-	width, height:          c.int,
-	originalWidth, originalHeight:  c.int,
+	rendererObject:                rawptr,
+	u, v:                          cc.float,
+	u2, v2:                        cc.float,
+	degrees:                       cc.int,
+	offsetX, ossetY:               cc.float,
+	width, height:                 cc.int,
+	originalWidth, originalHeight: cc.int,
 }
 
+_spTimelineVtable :: struct {
+		apply: #type proc(self: ^spTimeline, skeleton: ^spSkeleton, 
+						lastTime: cc.float, time: cc.float, firedEvents: [^]^spEvent,
+						eventsCount: [^]cc.int, alpha: cc.float, blend: spMixBlend,
+						direction: spMixDirection),
+		dispose: #type proc(self: ^spTimeline),
+		setBezier: #type proc(self: ^spTimeline, bezier: cc.int, frame: cc.int,
+						value: cc.float, time1: cc.float, value1: cc.float,
+						cx1: cc.float, cy1: cc.float, cx2: cc.float, cy2: cc.float,
+						time2: cc.float, value2: cc.float),
+}
+
+spTimeline :: struct {
+		vtable: _spTimelineVtable,
+		propertyIds: [SP_MAX_PROPERTY_IDS]spPropertyId,
+		propertyIdsCount: cc.int,
+
+		frames: ^spFloatArray,
+		frameCount: cc.int,
+		frameEntries: cc.int,
+		type: spTimelineType,
+}
+
+spTrackEntry :: struct {
+		animation: ^spAnimation,
+		previous: ^spTrackEntry,
+		next: ^spTrackEntry,
+		mixingFrom: ^spTrackEntry,
+		mixingTo: ^spTrackEntry,
+
+		listener: #type proc(state: ^spAnimationState, type: spEventType, entry: ^spTrackEntry, event: ^spEvent),
+
+		trackIndex: cc.int,
+		loop: cc.int,
+		holdPrevious: cc.int,
+		reverse: cc.int,
+		shortestRotation: cc.int,
+
+		eventThreshold, attachmentThreshold, drawOrderThreshold: cc.float,
+		animationStart, animationEnd, animationLast, nextAnimationLast: cc.float,
+		delay: cc.float,
+		trackTime, trackLast, nextTrackLast, trackEnd: cc.float,
+		timeScale: cc.float,
+		alpha: cc.float,
+		mixTime, mixDuration: cc.float,
+		interruptAlpha, totalAlpha: cc.float,
+
+		mixBlend: spMixBlend,
+		timelineMode: ^spIntArray,
+		timelineHoldMix: ^spTrackEntryArray,
+		timelinesRotation: [^]cc.float,
+		timelinesRotationCount: cc.int,
+		
+		rendererObject: rawptr,
+		userData: rawptr,
+}		
+
 spTransformConstraintData :: struct {
-		name: cstring,
-		order: c.int,
-		skinRequired: c.int,
-		bonesCount: c.int,
-		bones: [^]^spBoneData,
-		target: ^spBoneData,
-		mixRotate: c.float,
-		minX, minY: c.float,
-		minScaleX, minScaleY: c.float,
-		mixShearY: c.float,
-		offsetRotation: c.float,
-		offsetX, offsetY: c.float,
-		offsetScaleX, offsetScaleY: c.float,
-		offsetShearY: c.float,
-		relative: c.int,
-		local: c.int,
+	name:                       cstring,
+	order:                      cc.int,
+	skinRequired:               cc.int,
+	bonesCount:                 cc.int,
+	bones:                      [^]^spBoneData,
+	target:                     ^spBoneData,
+	mixRotate:                  cc.float,
+	minX, minY:                 cc.float,
+	minScaleX, minScaleY:       cc.float,
+	mixShearY:                  cc.float,
+	offsetRotation:             cc.float,
+	offsetX, offsetY:           cc.float,
+	offsetScaleX, offsetScaleY: cc.float,
+	offsetShearY:               cc.float,
+	relative:                   cc.int,
+	local:                      cc.int,
 }
 
 spTransformConstraint :: struct {
-		data: ^spTransformConstraintData,
-		bonesCount: c.int,
-		bones: [^]^spBone,
-		target: ^spBone,
-		mixRotate: c.float,
-		mixX, mixY: c.float,
-		mixScaleX, mixScaleY: c.float,
-		mixShearY: c.float,
-		active: c.int,
+	data:                 ^spTransformConstraintData,
+	bonesCount:           cc.int,
+	bones:                [^]^spBone,
+	target:               ^spBone,
+	mixRotate:            cc.float,
+	mixX, mixY:           cc.float,
+	mixScaleX, mixScaleY: cc.float,
+	mixShearY:            cc.float,
+	active:               cc.int,
+}
+
+spTransformConstraintTimeline :: struct {
+		super: spCurveTimeline,
+		transformConstraintIndex: cc.int,
+}
+
+spTranslateTimeline :: struct {
+		super: spCurveTimeline2,
+		boneIndex: cc.int,
+}
+
+spTranslateXTimeline :: struct {
+		super: spCurveTimeline1,
+		boneIndex: cc.int,
+}
+
+spTranslateYTimeline :: struct {
+		super: spCurveTimeline1,
+		boneIndex: cc.int,
 }
 
 spTriangulator :: struct {
-		convexPolygons: ^spArrayFloatArray,
-		convexPolygonsIndices: ^spArrayShortArray,
-
-		indicesArray: ^spShortArray,
-		isConcaveArray: ^spIntArray,
-		triangles: ^spShortArray,
-
-		polygonPool: ^spArrayFloatArray,
-		polygonIndicesPool: ^spArrayShortArray,
+	convexPolygons:        ^spArrayFloatArray,
+	convexPolygonsIndices: ^spArrayShortArray,
+	indicesArray:          ^spShortArray,
+	isConcaveArray:        ^spIntArray,
+	triangles:             ^spShortArray,
+	polygonPool:           ^spArrayFloatArray,
+	polygonIndicesPool:    ^spArrayShortArray,
 }
 
 spVertexAttachment :: struct {
-		super: spAttachment,
-		bonesCount: c.int,
-		bones: [^]c.int,
-		verticesCount: c.int,
-		vertices: [^]c.float,
-		worldVerticesLength: c.int,
-		timelineAttachment: ^spAttachment,
-		id: c.int,
+	super:               spAttachment,
+	bonesCount:          cc.int,
+	bones:               [^]cc.int,
+	verticesCount:       cc.int,
+	vertices:            [^]cc.float,
+	worldVerticesLength: cc.int,
+	timelineAttachment:  ^spAttachment,
+	id:                  cc.int,
 }
 
 // Arrays
 spFloatArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]c.float,
- }
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]cc.float,
+}
 
 spIntArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]c.int,
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]cc.int,
 }
 
 spShortArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]c.short,
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]cc.short,
 }
 
 spUnsignedShortArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]c.ushort,
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]cc.ushort,
 }
 
 spArrayFloatArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]^spFloatArray,
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]^spFloatArray,
 }
 
 spArrayShortArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]^spShortArray,
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]^spShortArray,
 }
 
 spBoneDataArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]^spBoneData,
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]^spBoneData,
 }
 
 spIkConstraintDataArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]^spIkConstraintData,
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]^spIkConstraintData,
 }
 
 spTransformConstraintDataArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]^spTransformConstraintData,
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]^spTransformConstraintData,
 }
 
 spPathConstraintDataArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]^spPathConstraintData,
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]^spPathConstraintData,
 }
 
 spTextureRegionArray :: struct {
-		size: c.int,
-		capacity: c.int,
-		items: [^]^spTextureRegion,
+	size:     cc.int,
+	capacity: cc.int,
+	items:    [^]^spTextureRegion,
 }
 
+spKeyValueArray :: struct {
+size:     cc.int,
+	capacity: cc.int,
+	items:    [^]spKeyValue,
+}
 
+spTrackEntryArray :: struct {
+size:     cc.int,
+	capacity: cc.int,
+	items:    [^]^spTrackEntry,
+}
+
+spPropertyIdArray :: struct {
+size:     cc.int,
+	capacity: cc.int,
+	items:    [^]spPropertyId,
+}
+
+spTimelineArray :: struct {
+size:     cc.int,
+	capacity: cc.int,
+	items:    [^]^spTimeline,
+}
 
 
 // - Procedures -
@@ -747,7 +1014,7 @@ foreign lib {
 	// [Color.h] ---
 	spColor_create :: proc() -> ^spColor ---
 	spColor_dispose :: proc(self: ^spColor) ---
-	spColor_setFromFloats :: proc(color: ^spColor, r: c.float, g: c.float, b: c.float, a: c.float) ---
+	spColor_setFromFloats :: proc(color: ^spColor, r: cc.float, g: cc.float, b: cc.float, a: cc.float) ---
 
 
 	// [EventData.h] ---
