@@ -3,45 +3,46 @@
     - [ ] Animation
     - [ ] AnimationState
     - [ ] AnimationStateData
-    - [ ] Array
+    - [x] Array
     - [ ] Atlas
     - [ ] AtlasAttachmentLoader
-    - [ ] Attachment
-    - [ ] AttachmentLoader
+    - [x] Attachment
+    - [x] AttachmentLoader
     - [ ] Bone
-    - [ ] BoneData
-    - [ ] BoundingBoxAttachment
-    - [ ] ClippingAttachment
+    - [x] BoneData
+    - [x] BoundingBoxAttachment
+    - [x] ClippingAttachment
     - [x] Color
     - [ ] Debug
     - [ ] dll
-    - [ ] Event
+    - [x] Event
     - [x] EventData
     - [ ] exension
-    - [ ] IKConstraint
-    - [ ] IKConstraintData
-    - [ ] MeshAttachment
-    - [ ] PathAttachment
-    - [ ] PathConstraint
-    - [ ] PathConstraintData
-    - [ ] PointAttachment
-    - [ ] RegionAttachment
-    - [ ] Sequence
-    - [ ] Skeleton
-    - [ ] SkeletonBinary
-    - [ ] SkeletonBounds
-    - [ ] SkeletonClipping
-    - [ ] SkeletonData
-    - [ ] SkeletonJson
-    - [ ] Skin
-    - [ ] Slot
-    - [ ] SlotData
+    - [x] IKConstraint
+    - [x] IKConstraintData
+    - [x] MeshAttachment
+    - [x] PathAttachment
+    - [x] PathConstraint
+    - [x] PathConstraintData
+    - [x] PointAttachment
+    - [x] RegionAttachment
+    - [x] Sequence
+    - [x] Skeleton
+    - [x] SkeletonBinary
+    - [x] SkeletonBounds
+    - [x] SkeletonClipping
+    - [x] SkeletonData
+    - [x] SkeletonJson
+    - [x] Skin
+    - [x] Slot
+    - [x] SlotData
     - [x] TextureRegion
-    - [ ] TransformConstraint
-    - [ ] TransformConstraintData
-    - [ ] Version
-    - [ ] VertexAttachment
-- [ ] Enums
+    - [x] TransformConstraint
+    - [x] TransformConstraintData
+    - [x] Triangulator
+    - [x] Version
+    - [x] VertexAttachment
+- [x] Enums
     - [x] Animation
     - [x] AnimationState
     - [x] AnimationStateData
