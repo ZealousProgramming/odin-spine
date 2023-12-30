@@ -1053,166 +1053,78 @@ spTimelineArray :: struct {
 @(default_calling_convention = "c")
 foreign lib {
 	// [Animation.h] ---
-	SP_API spAnimation *spAnimation_create(const char *name, spTimelineArray *timelines, float duration);
-	SP_API void spAnimation_dispose(spAnimation *self);
-	SP_API int /*bool*/ spAnimation_hasTimeline(spAnimation *self, spPropertyId *ids, int idsCount);
+	spAnimation_create :: proc(name: cstring, timelines: ^spTimelineArray, duration: cc.float) -> ^spAnimation ---
+	spAnimation_dispose :: proc(self: ^spAnimation) ---
+	spAnimation_hasTimeline :: proc(self: ^spAnimation, ids: [^]spPropertyId, idsCount: cc.int) -> cc.bool ---
 	/** Poses the skeleton at the specified time for this animation.
 	* @param lastTime The last time the animation was applied.
 	* @param events Any triggered events are added. May be null.*/
-	SP_API void
-	spAnimation_apply(const spAnimation *self, struct spSkeleton *skeleton, float lastTime, float time, int loop,
-					spEvent **events, int *eventsCount, float alpha, spMixBlend blend, spMixDirection direction);
-	SP_API void spTimeline_dispose(spTimeline *self);
-
-	SP_API void
-	spTimeline_apply(spTimeline *self, struct spSkeleton *skeleton, float lastTime, float time, spEvent **firedEvents,
-					int *eventsCount, float alpha, spMixBlend blend, spMixDirection direction);
-
-	SP_API void
-	spTimeline_setBezier(spTimeline *self, int bezier, int frame, float value, float time1, float value1, float cx1,
-						float cy1, float cx2, float cy2, float time2, float value2);
-
-	SP_API float spTimeline_getDuration(const spTimeline *self);
-	SP_API void spCurveTimeline_setLinear(spCurveTimeline *self, int frameIndex);
-
-	SP_API void spCurveTimeline_setStepped(spCurveTimeline *self, int frameIndex);
-
+	spAnimation_apply :: proc(self: ^spAnimation, skeleton: ^spSkeleton, lastTime: cc.float, time: cc.float, loop: cc.int, events: [^]^spEvent, eventsCount: [^]cc.int, alpha: cc.float, blend: spMixBlend, direction: spMixDirection) ---
+	spTimeline_dispose :: proc(self: ^spTimeline) ---
+	spTimeline_apply :: proc(self: ^spTimeline, skeleton: ^spSkeleton, lastTime: cc.float, time: cc.float, firedEvents: [^]^spEvent, eventsCount: [^]cc.int, alpha: cc.float, blend: spMixBlend, direction: spMixDirection) ---
+	spTimeline_setBezier :: proc(self: ^spTimeline, bezier: cc.int, frame: cc.int, value: cc.float, time1: cc.float, value1: cc.float, cx1: cc.float, cy1: cc.float, cx2: cc.float, cy2: cc.float, time2: cc.float, value2: cc.float) ---
+	spTimeline_getDuration :: proc(self: ^spTimeline) -> cc.float ---
+	spCurveTimeline_setLinear :: proc(self: ^spCurveTimeline, frameIndex: cc.int) ---
+	spCurveTimeline_setStepped :: proc(self: ^spCurveTimeline, frameIndex: cc.int) ---
 	/* Sets the control handle positions for an interpolation bezier curve used to transition from this keyframe to the next.
 	* cx1 and cx2 are from 0 to 1, representing the percent of time between the two keyframes. cy1 and cy2 are the percent of
 	* the difference between the keyframe's values. */
-	SP_API void spCurveTimeline_setCurve(spCurveTimeline *self, int frameIndex, float cx1, float cy1, float cx2, float cy2);
-
-	SP_API float spCurveTimeline_getCurvePercent(const spCurveTimeline *self, int frameIndex, float percent);
-
-	SP_API void spCurveTimeline1_setFrame(spCurveTimeline1 *self, int frame, float time, float value);
-
-	SP_API float spCurveTimeline1_getCurveValue(spCurveTimeline1 *self, float time);
-
-	SP_API void spCurveTimeline2_setFrame(spCurveTimeline1 *self, int frame, float time, float value1, float value2);
-
-	SP_API spRotateTimeline *spRotateTimeline_create(int frameCount, int bezierCount, int boneIndex);
-
-	SP_API void spRotateTimeline_setFrame(spRotateTimeline *self, int frameIndex, float time, float angle);
-
-	SP_API spTranslateTimeline *spTranslateTimeline_create(int frameCount, int bezierCount, int boneIndex);
-
-	SP_API void spTranslateTimeline_setFrame(spTranslateTimeline *self, int frameIndex, float time, float x, float y);
-
-	SP_API spTranslateXTimeline *spTranslateXTimeline_create(int frameCount, int bezierCount, int boneIndex);
-
-	SP_API void spTranslateXTimeline_setFrame(spTranslateXTimeline *self, int frame, float time, float x);
-
-	SP_API spTranslateYTimeline *spTranslateYTimeline_create(int frameCount, int bezierCount, int boneIndex);
-
-	SP_API void spTranslateYTimeline_setFrame(spTranslateYTimeline *self, int frame, float time, float y);
-
-	SP_API spScaleTimeline *spScaleTimeline_create(int frameCount, int bezierCount, int boneIndex);
-
-	SP_API void spScaleTimeline_setFrame(spScaleTimeline *self, int frameIndex, float time, float x, float y);
-
-	SP_API spScaleXTimeline *spScaleXTimeline_create(int frameCount, int bezierCount, int boneIndex);
-
-	SP_API void spScaleXTimeline_setFrame(spScaleXTimeline *self, int frame, float time, float x);
-
-	SP_API spScaleYTimeline *spScaleYTimeline_create(int frameCount, int bezierCount, int boneIndex);
-
-	SP_API void spScaleYTimeline_setFrame(spScaleYTimeline *self, int frame, float time, float y);
-
-	SP_API spShearTimeline *spShearTimeline_create(int frameCount, int bezierCount, int boneIndex);
-
-	SP_API void spShearTimeline_setFrame(spShearTimeline *self, int frameIndex, float time, float x, float y);
-
-	SP_API spShearXTimeline *spShearXTimeline_create(int frameCount, int bezierCount, int boneIndex);
-
-	SP_API void spShearXTimeline_setFrame(spShearXTimeline *self, int frame, float time, float x);
-
-	SP_API spShearYTimeline *spShearYTimeline_create(int frameCount, int bezierCount, int boneIndex);
-
-	SP_API void spShearYTimeline_setFrame(spShearYTimeline *self, int frame, float time, float x);
-
-	SP_API spRGBATimeline *spRGBATimeline_create(int framesCount, int bezierCount, int slotIndex);
-
-	SP_API void
-	spRGBATimeline_setFrame(spRGBATimeline *self, int frameIndex, float time, float r, float g, float b, float a);
-
-	SP_API spRGBTimeline *spRGBTimeline_create(int framesCount, int bezierCount, int slotIndex);
-
-	SP_API void spRGBTimeline_setFrame(spRGBTimeline *self, int frameIndex, float time, float r, float g, float b);
-
-	SP_API spAlphaTimeline *spAlphaTimeline_create(int frameCount, int bezierCount, int slotIndex);
-
-	SP_API void spAlphaTimeline_setFrame(spAlphaTimeline *self, int frame, float time, float x);
-
-	SP_API spRGBA2Timeline *spRGBA2Timeline_create(int framesCount, int bezierCount, int slotIndex);
-
-	SP_API void
-	spRGBA2Timeline_setFrame(spRGBA2Timeline *self, int frameIndex, float time, float r, float g, float b, float a,
-						 float r2, float g2, float b2);
-
-	SP_API spRGB2Timeline *spRGB2Timeline_create(int framesCount, int bezierCount, int slotIndex);
-
-	SP_API void
-	spRGB2Timeline_setFrame(spRGB2Timeline *self, int frameIndex, float time, float r, float g, float b, float r2, float g2,
-							float b2);
-
-	SP_API spAttachmentTimeline *spAttachmentTimeline_create(int framesCount, int SlotIndex);
-
+	spCurveTimeline_setCurve :: proc(self: ^spCurveTimeline, frameIndex: cc.int, cx1: cc.float, cy1: cc.float, cx2: cc.float, cy2: cc.float) ---
+	spCurveTimeline_getCurvePercent :: proc(self: ^spCurveTimeline, frameIndex: cc.int, percent: cc.float) -> cc.float ---
+	spCurveTimeline1_setFrame :: proc(self: ^spCurveTimeline1, frame: cc.int, time: cc.float, value: cc.float) ---
+	spCurveTimeline1_getCurveValue :: proc(self: ^spCurveTimeline1, time: cc.float) -> cc.float ---
+	spCurveTimeline2_setFrame :: proc(self: ^spCurveTimeline1, frame: cc.int, time: cc.float, value1: cc.float, value2: cc.float) ---
+	spRotateTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, boneIndex: cc.int) -> ^spRotateTimeline ---
+	spRotateTimeline_setFrame :: proc(self: ^spRotateTimeline, frameIndex: cc.int, time: cc.float, angle: cc.float) ---
+	spTranslateTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, boneIndex: cc.int) -> ^spTranslateTimeline ---
+	spTranslateTimeline_setFrame :: proc(self: ^spTranslateTimeline, frameIndex: cc.int, time: cc.float, x: cc.float, y: cc.float) ---
+	spTranslateXTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, boneIndex: cc.int) -> ^spTranslateXTimeline ---
+	spTranslateXTimeline_setFrame :: proc(self: ^spTranslateXTimeline, frame: cc.int, time: cc.float, x: cc.float) ---
+	spTranslateYTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, boneIndex: cc.int) -> ^spTranslateYTimeline ---
+	spTranslateYTimeline_setFrame :: proc(self: ^spTranslateYTimeline, frame: cc.int, time: cc.float, y: cc.float) ---
+	spScaleTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, boneIndex: cc.int) -> ^spScaleTimeline ---
+	spScaleTimeline_setFrame :: proc(self: ^spScaleTimeline, frameIndex: cc.int, time: cc.float, x: cc.float, y: cc.float) ---
+	spScaleXTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, boneIndex: cc.int) -> ^spScaleXTimeline ---
+	spScaleXTimeline_setFrame :: proc(self: ^spScaleXTimeline, frame: cc.int, time: cc.float, x: cc.float) ---
+	spScaleYTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, boneIndex: cc.int) -> ^spScaleYTimeline ---
+	spScaleYTimeline_setFrame :: proc(self: ^spScaleYTimeline, frame: cc.int, time: cc.float, y: cc.float) ---
+	spShearTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, boneIndex: cc.int) -> ^spShearTimeline ---
+	spShearTimeline_setFrame :: proc(self: ^spShearTimeline, frameIndex: cc.int, time: cc.float, x: cc.float, y: cc.float) ---
+	spShearXTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, boneIndex: cc.int) -> ^spShearXTimeline ---
+	spShearXTimeline_setFrame :: proc(self: ^spShearXTimeline, frame: cc.int, time: cc.float, x: cc.float) ---
+	spShearYTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, boneIndex: cc.int) -> ^spShearYTimeline ---
+	spShearYTimeline_setFrame :: proc(self: ^spShearYTimeline, frame: cc.int, time: cc.float, x: cc.float) ---
+	spRGBATimeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, slotIndex: cc.int) -> ^spRGBATimeline ---
+	spRGBATimeline_setFrame :: proc(self: ^spRGBATimeline, frameIndex: cc.int, time: cc.float, r: cc.float, g: cc.float, b: cc.float, a: cc.float) ---
+	spRGBTimeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, slotIndex: cc.int) -> ^spRGBTimeline ---
+	spRGBTimeline_setFrame :: proc(self: ^spRGBTimeline, frameIndex: cc.int, time: cc.float, r: cc.float, g: cc.float, b: cc.float) ---
+	spAlphaTimeline_create :: proc(frameCount: cc.int, bezierCount: cc.int, slotIndex: cc.int) -> ^spAlphaTimeline ---
+	spAlphaTimeline_setFrame :: proc(self: ^spAlphaTimeline, frame: cc.int, time: cc.float, x: cc.float) ---
+	spRGBA2Timeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, slotIndex: cc.int) -> ^spRGBA2Timeline ---
+	spRGBA2Timeline_setFrame :: proc(self: ^spRGBA2Timeline, frameIndex: cc.int, time: cc.float, r: cc.float, g: cc.float, b: cc.float, a: cc.float, r2: cc.float, g2: cc.float, b2: cc.float) ---
+	spRGB2Timeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, slotIndex: cc.int) -> ^spRGB2Timeline ---
+	spRGB2Timeline_setFrame :: proc(self: ^spRGB2Timeline, frameIndex: cc.int, time: cc.float, r: cc.float, g: cc.float, b: cc.float, r2: cc.float, g2: cc.float, b2: cc.float) ---
+	spAttachmentTimeline_create :: proc(framesCount: cc.int, SlotIndex: cc.int) -> ^spAttachmentTimeline ---
 	/* @param attachmentName May be 0. */
-	SP_API void
-	spAttachmentTimeline_setFrame(spAttachmentTimeline *self, int frameIndex, float time, const char *attachmentName);
-
-	SP_API spDeformTimeline *
-	spDeformTimeline_create(int framesCount, int frameVerticesCount, int bezierCount, int slotIndex,
-						spVertexAttachment *attachment);
-
-	SP_API void spDeformTimeline_setFrame(spDeformTimeline *self, int frameIndex, float time, float *vertices);
-
-	SP_API spSequenceTimeline *spSequenceTimeline_create(int framesCount, int slotIndex, spAttachment *attachment);
-
-	SP_API void spSequenceTimeline_setFrame(spSequenceTimeline *self, int frameIndex, float time, int mode, int index, float delay);
-	
-	SP_API spEventTimeline *spEventTimeline_create(int framesCount);
-
-	SP_API void spEventTimeline_setFrame(spEventTimeline *self, int frameIndex, spEvent *event);
-
-	SP_API spDrawOrderTimeline *spDrawOrderTimeline_create(int framesCount, int slotsCount);
-
-	SP_API void spDrawOrderTimeline_setFrame(spDrawOrderTimeline *self, int frameIndex, float time, const int *drawOrder);
-
-	SP_API spIkConstraintTimeline *
-	spIkConstraintTimeline_create(int framesCount, int bezierCount, int transformConstraintIndex);
-
-	SP_API void
-	spIkConstraintTimeline_setFrame(spIkConstraintTimeline *self, int frameIndex, float time, float mix, float softness,
-								int bendDirection, int /*boolean*/ compress, int /**boolean**/ stretch);
-
-	SP_API spTransformConstraintTimeline *
-	spTransformConstraintTimeline_create(int framesCount, int bezierCount, int transformConstraintIndex);
-
-	SP_API void
-	spTransformConstraintTimeline_setFrame(spTransformConstraintTimeline *self, int frameIndex, float time, float mixRotate,
-									   float mixX, float mixY, float mixScaleX, float mixScaleY, float mixShearY);
-
-	SP_API spPathConstraintPositionTimeline *
-	spPathConstraintPositionTimeline_create(int framesCount, int bezierCount, int pathConstraintIndex);
-
-	SP_API void
-	spPathConstraintPositionTimeline_setFrame(spPathConstraintPositionTimeline *self, int frameIndex, float time,
-										  float value);
-
-	SP_API spPathConstraintSpacingTimeline *
-	spPathConstraintSpacingTimeline_create(int framesCount, int bezierCount, int pathConstraintIndex);
-
-	SP_API void spPathConstraintSpacingTimeline_setFrame(spPathConstraintSpacingTimeline *self, int frameIndex, float time,
-													 float value);
-
-	SP_API spPathConstraintMixTimeline *
-	spPathConstraintMixTimeline_create(int framesCount, int bezierCount, int pathConstraintIndex);
-
-	SP_API void
-	spPathConstraintMixTimeline_setFrame(spPathConstraintMixTimeline *self, int frameIndex, float time, float mixRotate,
-									 float mixX, float mixY);
-
+	spAttachmentTimeline_setFrame :: proc(self: ^spAttachmentTimeline, frameIndex: cc.int, time: cc.float, attachmentName: cstring) ---
+	spDeformTimeline_create :: proc(framesCount: cc.int, frameVerticesCount: cc.int, bezierCount: cc.int, slotIndex: cc.int, attachment: ^spVertexAttachment) -> ^spDeformTimeline ---
+	spDeformTimeline_setFrame :: proc(self: ^spDeformTimeline, frameIndex: cc.int, time: cc.float, vertices: [^]cc.float) ---
+	spSequenceTimeline_create :: proc(framesCount: cc.int, slotIndex: cc.int, attachment: ^spAttachment) -> ^spSequenceTimeline ---
+	spSequenceTimeline_setFrame :: proc(self: ^spSequenceTimeline, frameIndex: cc.int, time: cc.float, mode: cc.int, index: cc.int, delay: cc.float) ---
+	spEventTimeline_create :: proc(framesCount: cc.int) -> ^spEventTimeline ---
+	spEventTimeline_setFrame :: proc(self: ^spEventTimeline, frameIndex: cc.int, event: ^spEvent) ---
+	spDrawOrderTimeline_create :: proc(framesCount: cc.int, slotsCount: cc.int) -> ^spDrawOrderTimeline ---
+	spDrawOrderTimeline_setFrame :: proc(self: ^spDrawOrderTimeline, frameIndex: cc.int, time: cc.float, drawOrder: [^]cc.int) ---
+	spIkConstraintTimeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, transformConstraintIndex: cc.int) -> ^spIkConstraintTimeline ---
+	spIkConstraintTimeline_setFrame :: proc(self: ^spIkConstraintTimeline, frameIndex: cc.int, time: cc.float, mix: cc.float, softness: cc.float, bendDirection: cc.float, compress: cc.bool, stretch: cc.bool) ---
+	spTransformConstraintTimeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, transformConstraintIndex: cc.int) -> ^spTransformConstraintTimeline ---
+	spTransformConstraintTimeline_setFrame :: proc(self: ^spTransformConstraintTimeline, frameIndex: cc.int, time: cc.float, mixRotate: cc.float, mixX: cc.float, mixY: cc.float, mixScaleX: cc.float, mixScaleY: cc.float, mixShearY: cc.float) ---
+	spPathConstraintPositionTimeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, pathConstraintIndex: cc.int) -> ^spPathConstraintPositionTimeline ---
+	spPathConstraintPositionTimeline_setFrame :: proc(self: ^spPathConstraintPositionTimeline, frameIndex: cc.float, time: cc.float, value: cc.float) ---
+	spPathConstraintSpacingTimeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, pathConstraintIndex: cc.int) -> ^spPathConstraintSpacingTimeline ---
+	spPathConstraintSpacingTimeline_setFrame :: proc(self: ^spPathConstraintSpacingTimeline, frameIndex: cc.int, time: cc.float, value: cc.float) ---
+	spPathConstraintMixTimeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, pathConstraintIndex: cc.int) -> ^spPathConstraintMixTimeline ---
+	spPathConstraintMixTimeline_setFrame :: proc(self: ^spPathConstraintMixTimeline, frameIndex: cc.int, time: cc.float, mixRotate: cc.float, mixX: cc.float, mixY: cc.float) ---
 
 	// _SP_ARRAY_DECLARE_TYPE(spPropertyIdArray, spPropertyId)
 	spPropertyIdArray_create :: proc(initialCapacity: cc.int) -> ^spPropertyIdArray ---
@@ -1225,7 +1137,7 @@ foreign lib {
 	spPropertyIdArray_addAllValues :: proc(self: ^spPropertyIdArray, values: [^]spPropertyId, offset: cc.int, count: cc.int) ---
 	spPropertyIdArray_removeAt :: proc(self: ^spPropertyIdArray, index: cc.int) ---
 	spPropertyIdArray_contains :: proc(self: ^spPropertyIdArray, value: spPropertyId) -> cc.bool ---
-	spPropertyIdArray_pop :: proc(self:^spPropertyIdArray) -> spPropertyId ---
+	spPropertyIdArray_pop :: proc(self: ^spPropertyIdArray) -> spPropertyId ---
 	spPropertyIdArray_peek :: proc(self: ^spPropertyIdArray) -> spPropertyId ---
 
 	// _SP_ARRAY_DECLARE_TYPE(spTimelineArray, spTimeline*)
@@ -1239,7 +1151,7 @@ foreign lib {
 	spTimelineArray_addAllValues :: proc(self: ^spTimelineArray, values: [^]^spTimeline, offset: cc.int, count: cc.int) ---
 	spTimelineArray_removeAt :: proc(self: ^spTimelineArray, index: cc.int) ---
 	spTimelineArray_contains :: proc(self: ^spTimelineArray, value: ^spTimeline) -> cc.bool ---
-	spTimelineArray_pop :: proc(self:^spTimelineArray) -> ^spTimeline ---
+	spTimelineArray_pop :: proc(self: ^spTimelineArray) -> ^spTimeline ---
 	spTimelineArray_peek :: proc(self: ^spTimelineArray) -> ^spTimeline ---
 
 	// [AnimationState.h] ---
