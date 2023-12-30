@@ -1,3 +1,32 @@
+/******************************************************************************
+ * Spine Runtimes License Agreement
+ * Last updated July 28, 2023. Replaces all prior versions.
+ *
+ * Copyright (c) 2013-2023, Esoteric Software LLC
+ *
+ * Integration of the Spine Runtimes into software or otherwise creating
+ * derivative works of the Spine Runtimes is permitted under the terms and
+ * conditions of Section 2 of the Spine Editor License Agreement:
+ * http://esotericsoftware.com/spine-editor-license
+ *
+ * Otherwise, it is permitted to integrate the Spine Runtimes into software or
+ * otherwise create derivative works of the Spine Runtimes (collectively,
+ * "Products"), provided that each user of the Products must obtain their own
+ * Spine Editor license and redistribution of the Products in any form must
+ * include this license and copyright notice.
+ *
+ * THE SPINE RUNTIMES ARE PROVIDED BY ESOTERIC SOFTWARE LLC "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL ESOTERIC SOFTWARE LLC BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES,
+ * BUSINESS INTERRUPTION, OR LOSS OF USE, DATA, OR PROFITS) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THE
+ * SPINE RUNTIMES, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *****************************************************************************/
+
 package core
 
 import cc "core:c"
@@ -1024,13 +1053,245 @@ spTimelineArray :: struct {
 @(default_calling_convention = "c")
 foreign lib {
 	// [Animation.h] ---
+	SP_API spAnimation *spAnimation_create(const char *name, spTimelineArray *timelines, float duration);
+	SP_API void spAnimation_dispose(spAnimation *self);
+	SP_API int /*bool*/ spAnimation_hasTimeline(spAnimation *self, spPropertyId *ids, int idsCount);
+	/** Poses the skeleton at the specified time for this animation.
+	* @param lastTime The last time the animation was applied.
+	* @param events Any triggered events are added. May be null.*/
+	SP_API void
+	spAnimation_apply(const spAnimation *self, struct spSkeleton *skeleton, float lastTime, float time, int loop,
+					spEvent **events, int *eventsCount, float alpha, spMixBlend blend, spMixDirection direction);
+	SP_API void spTimeline_dispose(spTimeline *self);
+
+	SP_API void
+	spTimeline_apply(spTimeline *self, struct spSkeleton *skeleton, float lastTime, float time, spEvent **firedEvents,
+					int *eventsCount, float alpha, spMixBlend blend, spMixDirection direction);
+
+	SP_API void
+	spTimeline_setBezier(spTimeline *self, int bezier, int frame, float value, float time1, float value1, float cx1,
+						float cy1, float cx2, float cy2, float time2, float value2);
+
+	SP_API float spTimeline_getDuration(const spTimeline *self);
+	SP_API void spCurveTimeline_setLinear(spCurveTimeline *self, int frameIndex);
+
+	SP_API void spCurveTimeline_setStepped(spCurveTimeline *self, int frameIndex);
+
+	/* Sets the control handle positions for an interpolation bezier curve used to transition from this keyframe to the next.
+	* cx1 and cx2 are from 0 to 1, representing the percent of time between the two keyframes. cy1 and cy2 are the percent of
+	* the difference between the keyframe's values. */
+	SP_API void spCurveTimeline_setCurve(spCurveTimeline *self, int frameIndex, float cx1, float cy1, float cx2, float cy2);
+
+	SP_API float spCurveTimeline_getCurvePercent(const spCurveTimeline *self, int frameIndex, float percent);
+
+	SP_API void spCurveTimeline1_setFrame(spCurveTimeline1 *self, int frame, float time, float value);
+
+	SP_API float spCurveTimeline1_getCurveValue(spCurveTimeline1 *self, float time);
+
+	SP_API void spCurveTimeline2_setFrame(spCurveTimeline1 *self, int frame, float time, float value1, float value2);
+
+	SP_API spRotateTimeline *spRotateTimeline_create(int frameCount, int bezierCount, int boneIndex);
+
+	SP_API void spRotateTimeline_setFrame(spRotateTimeline *self, int frameIndex, float time, float angle);
+
+	SP_API spTranslateTimeline *spTranslateTimeline_create(int frameCount, int bezierCount, int boneIndex);
+
+	SP_API void spTranslateTimeline_setFrame(spTranslateTimeline *self, int frameIndex, float time, float x, float y);
+
+	SP_API spTranslateXTimeline *spTranslateXTimeline_create(int frameCount, int bezierCount, int boneIndex);
+
+	SP_API void spTranslateXTimeline_setFrame(spTranslateXTimeline *self, int frame, float time, float x);
+
+	SP_API spTranslateYTimeline *spTranslateYTimeline_create(int frameCount, int bezierCount, int boneIndex);
+
+	SP_API void spTranslateYTimeline_setFrame(spTranslateYTimeline *self, int frame, float time, float y);
+
+	SP_API spScaleTimeline *spScaleTimeline_create(int frameCount, int bezierCount, int boneIndex);
+
+	SP_API void spScaleTimeline_setFrame(spScaleTimeline *self, int frameIndex, float time, float x, float y);
+
+	SP_API spScaleXTimeline *spScaleXTimeline_create(int frameCount, int bezierCount, int boneIndex);
+
+	SP_API void spScaleXTimeline_setFrame(spScaleXTimeline *self, int frame, float time, float x);
+
+	SP_API spScaleYTimeline *spScaleYTimeline_create(int frameCount, int bezierCount, int boneIndex);
+
+	SP_API void spScaleYTimeline_setFrame(spScaleYTimeline *self, int frame, float time, float y);
+
+	SP_API spShearTimeline *spShearTimeline_create(int frameCount, int bezierCount, int boneIndex);
+
+	SP_API void spShearTimeline_setFrame(spShearTimeline *self, int frameIndex, float time, float x, float y);
+
+	SP_API spShearXTimeline *spShearXTimeline_create(int frameCount, int bezierCount, int boneIndex);
+
+	SP_API void spShearXTimeline_setFrame(spShearXTimeline *self, int frame, float time, float x);
+
+	SP_API spShearYTimeline *spShearYTimeline_create(int frameCount, int bezierCount, int boneIndex);
+
+	SP_API void spShearYTimeline_setFrame(spShearYTimeline *self, int frame, float time, float x);
+
+	SP_API spRGBATimeline *spRGBATimeline_create(int framesCount, int bezierCount, int slotIndex);
+
+	SP_API void
+	spRGBATimeline_setFrame(spRGBATimeline *self, int frameIndex, float time, float r, float g, float b, float a);
+
+	SP_API spRGBTimeline *spRGBTimeline_create(int framesCount, int bezierCount, int slotIndex);
+
+	SP_API void spRGBTimeline_setFrame(spRGBTimeline *self, int frameIndex, float time, float r, float g, float b);
+
+	SP_API spAlphaTimeline *spAlphaTimeline_create(int frameCount, int bezierCount, int slotIndex);
+
+	SP_API void spAlphaTimeline_setFrame(spAlphaTimeline *self, int frame, float time, float x);
+
+	SP_API spRGBA2Timeline *spRGBA2Timeline_create(int framesCount, int bezierCount, int slotIndex);
+
+	SP_API void
+	spRGBA2Timeline_setFrame(spRGBA2Timeline *self, int frameIndex, float time, float r, float g, float b, float a,
+						 float r2, float g2, float b2);
+
+	SP_API spRGB2Timeline *spRGB2Timeline_create(int framesCount, int bezierCount, int slotIndex);
+
+	SP_API void
+	spRGB2Timeline_setFrame(spRGB2Timeline *self, int frameIndex, float time, float r, float g, float b, float r2, float g2,
+							float b2);
+
+	SP_API spAttachmentTimeline *spAttachmentTimeline_create(int framesCount, int SlotIndex);
+
+	/* @param attachmentName May be 0. */
+	SP_API void
+	spAttachmentTimeline_setFrame(spAttachmentTimeline *self, int frameIndex, float time, const char *attachmentName);
+
+	SP_API spDeformTimeline *
+	spDeformTimeline_create(int framesCount, int frameVerticesCount, int bezierCount, int slotIndex,
+						spVertexAttachment *attachment);
+
+	SP_API void spDeformTimeline_setFrame(spDeformTimeline *self, int frameIndex, float time, float *vertices);
+
+	SP_API spSequenceTimeline *spSequenceTimeline_create(int framesCount, int slotIndex, spAttachment *attachment);
+
+	SP_API void spSequenceTimeline_setFrame(spSequenceTimeline *self, int frameIndex, float time, int mode, int index, float delay);
+	
+	SP_API spEventTimeline *spEventTimeline_create(int framesCount);
+
+	SP_API void spEventTimeline_setFrame(spEventTimeline *self, int frameIndex, spEvent *event);
+
+	SP_API spDrawOrderTimeline *spDrawOrderTimeline_create(int framesCount, int slotsCount);
+
+	SP_API void spDrawOrderTimeline_setFrame(spDrawOrderTimeline *self, int frameIndex, float time, const int *drawOrder);
+
+	SP_API spIkConstraintTimeline *
+	spIkConstraintTimeline_create(int framesCount, int bezierCount, int transformConstraintIndex);
+
+	SP_API void
+	spIkConstraintTimeline_setFrame(spIkConstraintTimeline *self, int frameIndex, float time, float mix, float softness,
+								int bendDirection, int /*boolean*/ compress, int /**boolean**/ stretch);
+
+	SP_API spTransformConstraintTimeline *
+	spTransformConstraintTimeline_create(int framesCount, int bezierCount, int transformConstraintIndex);
+
+	SP_API void
+	spTransformConstraintTimeline_setFrame(spTransformConstraintTimeline *self, int frameIndex, float time, float mixRotate,
+									   float mixX, float mixY, float mixScaleX, float mixScaleY, float mixShearY);
+
+	SP_API spPathConstraintPositionTimeline *
+	spPathConstraintPositionTimeline_create(int framesCount, int bezierCount, int pathConstraintIndex);
+
+	SP_API void
+	spPathConstraintPositionTimeline_setFrame(spPathConstraintPositionTimeline *self, int frameIndex, float time,
+										  float value);
+
+	SP_API spPathConstraintSpacingTimeline *
+	spPathConstraintSpacingTimeline_create(int framesCount, int bezierCount, int pathConstraintIndex);
+
+	SP_API void spPathConstraintSpacingTimeline_setFrame(spPathConstraintSpacingTimeline *self, int frameIndex, float time,
+													 float value);
+
+	SP_API spPathConstraintMixTimeline *
+	spPathConstraintMixTimeline_create(int framesCount, int bezierCount, int pathConstraintIndex);
+
+	SP_API void
+	spPathConstraintMixTimeline_setFrame(spPathConstraintMixTimeline *self, int frameIndex, float time, float mixRotate,
+									 float mixX, float mixY);
+
+
+	// _SP_ARRAY_DECLARE_TYPE(spPropertyIdArray, spPropertyId)
+	spPropertyIdArray_create :: proc(initialCapacity: cc.int) -> ^spPropertyIdArray ---
+	spPropertyIdArray_dispose :: proc(self: ^spPropertyIdArray) ---
+	spPropertyIdArray_clear :: proc(self: ^spPropertyIdArray) ---
+	spPropertyIdArray_setSize :: proc(self: ^spPropertyIdArray, newSize: cc.int) -> ^spPropertyIdArray ---
+	spPropertyIdArray_ensureCapacity :: proc(self: ^spPropertyIdArray, newCapacity: cc.int) ---
+	spPropertyIdArray_add :: proc(self: ^spPropertyIdArray, value: spPropertyId) ---
+	spPropertyIdArray_addAll :: proc(self: ^spPropertyIdArray, other: ^spPropertyIdArray) ---
+	spPropertyIdArray_addAllValues :: proc(self: ^spPropertyIdArray, values: [^]spPropertyId, offset: cc.int, count: cc.int) ---
+	spPropertyIdArray_removeAt :: proc(self: ^spPropertyIdArray, index: cc.int) ---
+	spPropertyIdArray_contains :: proc(self: ^spPropertyIdArray, value: spPropertyId) -> cc.bool ---
+	spPropertyIdArray_pop :: proc(self:^spPropertyIdArray) -> spPropertyId ---
+	spPropertyIdArray_peek :: proc(self: ^spPropertyIdArray) -> spPropertyId ---
+
+	// _SP_ARRAY_DECLARE_TYPE(spTimelineArray, spTimeline*)
+	spTimelineArray_create :: proc(initialCapacity: cc.int) -> ^spTimelineArray ---
+	spTimelineArray_dispose :: proc(self: ^spTimelineArray) ---
+	spTimelineArray_clear :: proc(self: ^spTimelineArray) ---
+	spTimelineArray_setSize :: proc(self: ^spTimelineArray, newSize: cc.int) -> ^spTimelineArray ---
+	spTimelineArray_ensureCapacity :: proc(self: ^spTimelineArray, newCapacity: cc.int) ---
+	spTimelineArray_add :: proc(self: ^spTimelineArray, value: ^spTimeline) ---
+	spTimelineArray_addAll :: proc(self: ^spTimelineArray, other: ^spTimelineArray) ---
+	spTimelineArray_addAllValues :: proc(self: ^spTimelineArray, values: [^]^spTimeline, offset: cc.int, count: cc.int) ---
+	spTimelineArray_removeAt :: proc(self: ^spTimelineArray, index: cc.int) ---
+	spTimelineArray_contains :: proc(self: ^spTimelineArray, value: ^spTimeline) -> cc.bool ---
+	spTimelineArray_pop :: proc(self:^spTimelineArray) -> ^spTimeline ---
+	spTimelineArray_peek :: proc(self: ^spTimelineArray) -> ^spTimeline ---
 
 	// [AnimationState.h] ---
+	/* @param data May be 0 for no mixing. */
+	spAnimationState_create :: proc(data: ^spAnimationStateData) -> ^spAnimationState ---
+	spAnimationState_dispose :: proc(self: ^spAnimationState) ---
+	spAnimationState_update :: proc(self: ^spAnimationState, delta: cc.float) ---
+	spAnimationState_apply :: proc(self: ^spAnimationState, skeleton: ^spSkeleton) -> cc.bool ---
+	spAnimationState_clearTracks :: proc(self: ^spAnimationState) ---
+	spAnimationState_clearTrack :: proc(self: ^spAnimationState, trackIndex: cc.int) ---
+	/** Set the current animation. Any queued animations are cleared. */
+	spAnimationState_setAnimationByName :: proc(self: ^spAnimationState, trackIndex: cc.int, animationName: cstring, loop: cc.bool) -> ^spTrackEntry ---
+	spAnimationState_setAnimation :: proc(self: ^spAnimationState, trackIndex: cc.int, animation: ^spAnimation, loop: cc.bool) -> ^spTrackEntry ---
+	/** Adds an animation to be played delay seconds after the current or last queued animation, taking into account any mix
+	* duration. */
+	spAnimationState_addAnimationByName :: proc(self: ^spAnimationState, trackIndex: cc.int, animationName: cstring, loop: cc.bool, delay: cc.float) -> ^spTrackEntry ---
+	spAnimationState_addAnimation :: proc(self: ^spAnimationState, trackIndex: cc.int, animation: ^spAnimation, loop: cc.bool, delay: cc.float) -> ^spTrackEntry ---
+	spAnimationState_setEmptyAnimation :: proc(self: ^spAnimationState, trackIndex: cc.int, mixDuration: cc.float) -> ^spTrackEntry ---
+	spAnimationState_addEmptyAnimation :: proc(self: ^spAnimationState, trackIndex: cc.int, mixDuration: cc.float, delay: cc.float) -> ^spTrackEntry ---
+	spAnimationState_setEmptyAnimations :: proc(self: ^spAnimationState, mixDuration: cc.float) ---
+	spAnimationState_getCurrent :: proc(self: ^spAnimationState, trackIndex: cc.int) -> ^spTrackEntry ---
+	spAnimationState_clearListenerNotifications :: proc(self: ^spAnimationState) ---
+	spTrackEntry_getAnimationTime :: proc(entry: ^spTrackEntry) -> cc.float ---
+	spTrackEntry_getTrackComplete :: proc(entry: ^spTrackEntry) -> cc.float ---
+	spAnimationState_clearNext :: proc(self: ^spAnimationState, entry: ^spTrackEntry) ---
+	/** Use this to dispose static memory before your app exits to appease your memory leak detector*/
+	spAnimationState_disposeStatics :: proc() ---
+
+	// _SP_ARRAY_DECLARE_TYPE(spTrackEntryArray, spTrackEntry*)
+	spTrackEntryArray_create :: proc(initialCapacity: cc.int) -> ^spTrackEntryArray ---
+	spTrackEntryArray_dispose :: proc(self: ^spTrackEntryArray) ---
+	spTrackEntryArray_clear :: proc(self: ^spTrackEntryArray) ---
+	spTrackEntryArray_setSize :: proc(self: ^spTrackEntryArray, newSize: cc.int) -> ^spTrackEntryArray ---
+	spTrackEntryArray_ensureCapacity :: proc(self: ^spTrackEntryArray, newCapacity: cc.int) ---
+	spTrackEntryArray_add :: proc(self: ^spTrackEntryArray, value: ^spTrackEntry) ---
+	spTrackEntryArray_addAll :: proc(self: ^spTrackEntryArray, other: ^spTrackEntryArray) ---
+	spTrackEntryArray_addAllValues :: proc(self: ^spTrackEntryArray, values: [^]^spTrackEntry, offset: cc.int, count: cc.int) ---
+	spTrackEntryArray_removeAt :: proc(self: ^spTrackEntryArray, index: cc.int) ---
+	spTrackEntryArray_contains :: proc(self: ^spTrackEntryArray, value: ^spTrackEntry) -> cc.bool ---
+	spTrackEntryArray_pop :: proc(self: ^spTrackEntryArray) -> ^spTrackEntry ---
+	spTrackEntryArray_peek :: proc(self: ^spTrackEntryArray) -> ^spTrackEntry ---
+
 
 	// [AnimationStateData.h] ---
+	spAnimationStateData_create :: proc(skeletonData: ^spSkeletonData) -> ^spAnimationStateData ---
+	spAnimationStateData_dispose :: proc(self: ^spAnimationStateData) ---
+	spAnimationStateData_setMixByName :: proc(self: ^spAnimationStateData, fromName: cstring, toName: cstring, duration: cc.float) ---
+	spAnimationStateData_setMix :: proc(self: ^spAnimationStateData, from: ^spAnimation, to: ^spAnimation, duration: cc.float) ---
+	/* Returns 0 if there is no mixing between the animations. */
+	spAnimationStateData_getMix :: proc(self: ^spAnimationStateData, from: ^spAnimation, to: ^spAnimation) -> cc.float ---
 
 	// [Array.h] ---
-
 	// NOTE(devon): ARRAY DEC TEMPLATE
 	// name##_create :: proc(initialCapacity: cc.int) -> ^name ---
 	// name##_dispose :: proc(self: ^name) ---
@@ -1046,29 +1307,107 @@ foreign lib {
 	// name##_peek :: proc(self: ^name) -> T ---
 
 	// [Atlas.h] ---
+	spAtlasPage_create :: proc(atlas: ^spAtlas, name: cstring) -> ^spAtlasPage ---
+	spAtlasPage_dispose :: proc(self: ^spAtlasPage) ---
+	spAtlasRegion_create :: proc() -> ^spAtlasRegion ---
+	spAtlasRegion_dispose :: proc(self: ^spAtlasRegion) ---
+	/* Image files referenced in the atlas file will be prefixed with dir. */
+	spAtlas_create :: proc(data: cstring, length: cc.int, dir: cstring, rendererObject: rawptr) -> ^spAtlas ---
+	/* Image files referenced in the atlas file will be prefixed with the directory containing the atlas file. */
+	spAtlas_createFromFile :: proc(path: cstring, rendererObject: rawptr) -> ^spAtlas ---
+	spAtlas_dispose :: proc(atlas: ^spAtlas) ---
+	/* Returns 0 if the region was not found. */
+	spAtlas_findRegion :: proc(self: ^spAtlas, name: cstring) -> ^spAtlasRegion ---
+
+	spKeyValueArray_create :: proc(initialCapacity: cc.int) -> ^spKeyValueArray ---
+	spKeyValueArray_dispose :: proc(self: ^spKeyValueArray) ---
+	spKeyValueArray_clear :: proc(self: ^spKeyValueArray) ---
+	spKeyValueArray_setSize :: proc(self: ^spKeyValueArray, newSize: cc.int) -> ^spKeyValueArray ---
+	spKeyValueArray_ensureCapacity :: proc(self: ^spKeyValueArray, newCapacity: cc.int) ---
+	spKeyValueArray_add :: proc(self: ^spKeyValueArray, value: spKeyValue) ---
+	spKeyValueArray_addAll :: proc(self: ^spKeyValueArray, other: ^spKeyValueArray) ---
+	spKeyValueArray_addAllValues :: proc(self: ^spKeyValueArray, values: [^]spKeyValue, offset: cc.int, count: cc.int) ---
+	spKeyValueArray_removeAt :: proc(self: ^spKeyValueArray, index: cc.int) ---
+	spKeyValueArray_contains :: proc(self: ^spKeyValueArray, value: spKeyValue) -> cc.bool ---
+	spKeyValueArray_pop :: proc(self: ^spKeyValueArray) -> spKeyValue ---
+	spKeyValueArray_peek :: proc(self: ^spKeyValueArray) -> spKeyValue ---
+
 
 	// [AtlasAttachmentLoader.h] ---
+	spAtlasAttachmentLoader_create :: proc(atlas: ^spAtlas) -> spAtlasAttachmentLoader ---
 
 	// [Attachment.h] ---
+	spAttachment_dispose :: proc(self: ^spAttachment) ---
+	spAttachment_copy :: proc(self: ^spAttachment) -> ^spAttachment ---
 
 	// [AttachmentLoader.h] ---
+	spAttachmentLoader_dispose :: proc(self: ^spAttachmentLoader) ---
+	/* Called to create each attachment. Returns 0 to not load an attachment. If 0 is returned and _spAttachmentLoader_setError was
+	* called, an error occurred. */
+	spAttachmentLoader_createAttachment :: proc(self: ^spAttachmentLoader, skin: ^spSkin, type: spAttachmentType, name: cstring, path: cstring, sequence: ^spSequence) -> ^spAttachment ---
+	/* Called after the attachment has been fully configured. */
+	spAttachmentLoader_configureAttachment :: proc(self: ^spAttachmentLoader, attachment: ^spAttachment) ---
+	/* Called just before the attachment is disposed. This can release allocations made in spAttachmentLoader_configureAttachment. */
+	spAttachmentLoader_disposeAttachment :: proc(self: ^spAttachmentLoader, attachment: ^spAttachment) ---
 
 	// [Bone.h] ---
+	spBone_setYDown :: proc(yDown: cc.bool) ---
+	spBone_isYDown :: proc() -> cc.bool ---
+	/* @param parent May be 0. */
+	spBone_create :: proc(data: ^spBoneData, skeleton: ^spSkeleton, parent: ^spBone) -> ^spBone ---
+	spBone_dispose :: proc(self: ^spBone) ---
+	spBone_setToSetupPose :: proc(self: ^spBone) ---
+	spBone_update :: proc(self: ^spBone) ---
+	spBone_updateWorldTransform :: proc(self: ^spBone) ---
+	spBone_updateWorldTransformWith :: proc(self: ^spBone, x: cc.float, y: cc.float, rotation: cc.float, scaleX: cc.float, scaleY: cc.float, shearX: cc.float, shearY: cc.float) ---
+	spBone_getWorldRotationX :: proc(self: ^spBone) -> cc.float ---
+	spBone_getWorldRotationY :: proc(self: ^spBone) -> cc.float ---
+	spBone_getWorldScaleX :: proc(self: ^spBone) -> cc.float ---
+	spBone_getWorldScaleY :: proc(self: ^spBone) -> cc.float ---
+	spBone_updateAppliedTransform :: proc(self: ^spBone) ---
+	spBone_worldToLocal :: proc(self: ^spBone, worldX: cc.float, worldY: cc.float, localX: [^]cc.float, localY: [^]cc.float) ---
+	spBone_localToWorld :: proc(self: ^spBone, localX: cc.float, localY: cc.float, worldX: [^]cc.float, worldY: [^]cc.float) ---
+	spBone_worldToLocalRotation :: proc(self: ^spBone, worldRotation: cc.float) -> cc.float ---
+	spBone_localToWorldRotation :: proc(self: ^spBone, localRotation: cc.float) -> cc.float ---
+	spBone_rotateWorld :: proc(self: ^spBone, degrees: cc.float) ---
 
 	// [BoneData.h] ---
+	spBoneData_create :: proc(index: cc.int, name: cstring, parent: ^spBoneData) -> ^spBoneData ---
+	spBoneData_dispose :: proc(self: ^spBoneData) ---
 
 	// [BoundingBoxAttachment.h] ---
+	spBoundingBoxAttachment_create :: proc(name: cstring) -> ^spBoundingBoxAttachment ---
 
 	// [ClippingAttachment.h] ---
+	_spClippingAttachment_dispose :: proc(self: ^spAttachment) ---
+	spClippingAttachment_create :: proc(name: cstring) -> ^spClippingAttachment ---
 
 	// [Color.h] ---
 	spColor_create :: proc() -> ^spColor ---
 	spColor_dispose :: proc(self: ^spColor) ---
 	spColor_setFromFloats :: proc(color: ^spColor, r: cc.float, g: cc.float, b: cc.float, a: cc.float) ---
+	spColor_setFromFloats3 :: proc(self: ^spColor, r: cc.float, g: cc.float, b: cc.float) ---
+	spColor_setFromColor :: proc(color: ^spColor, otherColor: ^spColor) ---
+	spColor_setFromColor3 :: proc(self: ^spColor, otherColor: ^spColor) ---
+	spColor_addFloats :: proc(color: ^spColor, r: cc.float, g: cc.float, b: cc.float, a: cc.float) ---
+	spColor_addFloats3 :: proc(color: ^spColor, r: cc.float, g: cc.float, b: cc.float) ---
+	spColor_addColor :: proc(color: ^spColor, otherColor: ^spColor) ---
+	spColor_clamp :: proc(color: ^spColor) ---
 
 	// [Debug.h] ---
+	spDebug_printSkeletonData :: proc(skeletonData: ^spSkeletonData) ---
+	spDebug_printAnimation :: proc(animation: ^spAnimation) ---
+	spDebug_printTimeline :: proc(timeline: ^spTimeline) ---
+	spDebug_printBoneDatas :: proc(boneDatas: [^]^spBoneData, numBoneDatas: cc.int) ---
+	spDebug_printBoneData :: proc(boneData: ^spBoneData) ---
+	spDebug_printSkeleton :: proc(skeleton: ^spSkeleton) ---
+	spDebug_printBones :: proc(bones: [^]^spBone, numBones: cc.int) ---
+	spDebug_printBone :: proc(bone: ^spBone) ---
+	spDebug_printFloats :: proc(values: [^]cc.float, numFloats: cc.int) ---
 
 	// [Event.h] ---
+	spEvent_create :: proc(time: cc.float, data: ^spEventData) -> ^spEvent ---
+	spEvent_dispose :: proc(self: ^spEvent) ---
 
 	// [EventData.h] ---
 	spEventData_create :: proc(name: cstring) -> ^spEventData ---
@@ -1077,28 +1416,133 @@ foreign lib {
 	// [extension.h] ---
 
 	// [IkConstraint.h] ---
+	spIkConstraint_create :: proc(data: ^spIkConstraintData, skeleton: ^spSkeleton) -> ^spIkConstraint ---
+	spIkConstraint_dispose :: proc(self: ^spIkConstraint) ---
+	spIkConstraint_update :: proc(self: ^spIkConstraint) ---
+	spIkConstraint_apply1 :: proc(bone: ^spBone, targetX: cc.float, targetY: cc.float, compress: cc.bool, stretch: cc.bool, uniform: cc.bool, alpha: cc.float) ---
+	spIkConstraint_apply2 :: proc(parent: ^spBone, child: ^spBone, targetX: cc.float, targetY: cc.float, bendDirection: cc.int, stretch: cc.bool, uniform: cc.bool, softness: cc.float, alpha: cc.float) ---
 
 	// [IkConstraintData.h] ---
+	spIkConstraintData_create :: proc(name: cstring) -> ^spIkConstraintData ---
+	spIkConstraintData_dispose :: proc(self: ^spIkConstraintData) ---
 
 	// [MeshAttachment.h] ---
+	spMeshAttachment_create :: proc(name: cstring) -> ^spMeshAttachment ---
+	spMeshAttachment_updateRegion :: proc(self: ^spMeshAttachment) ---
+	spMeshAttachment_setParentMesh :: proc(self: ^spMeshAttachment, parentMesh: ^spMeshAttachment) ---
+	spMeshAttachment_newLinkedMesh :: proc(self: ^spMeshAttachment) -> ^spMeshAttachment ---
 
 	// [PathAttachment.h] ---
+	spPathAttachment_create :: proc(name: cstring) -> ^spPathAttachment ---
 
 	// [PointConstraint.h] ---
+	spPathConstraint_create :: proc(data: ^spPathConstraintData, skeleton: ^spSkeleton) -> ^spPathConstraint ---
+	spPathConstraint_dispose :: proc(self: ^spPathConstraint) ---
+	spPathConstraint_update :: proc(self: ^spPathConstraint) ---
+	spPathConstraint_computeWorldPositions :: proc(self: ^spPathConstraint, path: ^spPathAttachment, spacesCount: cc.int, tangents: cc.bool) -> cc.float ---
 
 	// [PointConstraintData.h] ---
+	spPathConstraintData_create :: proc(name: cstring) -> ^spPathConstraintData ---
+	spPathConstraintData_dispose :: proc(self: ^spPathConstraintData) ---
 
 	// [PointAttachment.h] ---
+	spPointAttachment_create :: proc(name: cstring) -> ^spPointAttachment ---
+	spPointAttachment_computeWorldPosition :: proc(self: ^spPointAttachment, bone: ^spBone, x: [^]cc.float, y: [^]cc.float) ---
+	spPointAttachment_computeWorldRotation :: proc(self: ^spPointAttachment, bone: ^spBone) -> cc.float ---
 
 	// [RegionAttachment.h] ---
+	spRegionAttachment_create :: proc(name: cstring) -> ^spRegionAttachment ---
+	spRegionAttachment_updateRegion :: proc(self: ^spRegionAttachment) ---
+	spRegionAttachment_computeWorldVertices :: proc(self: ^spRegionAttachment, slot: ^spSlot, vertices: [^]cc.float, offset: cc.int, stride: cc.int) ---
 
 	// [Sequence.h] ---
+	spSequence_create :: proc(numRegions: cc.int) -> ^spSequence ---
+	spSequence_dispose :: proc(self: ^spSequence) ---
+	spSequence_copy :: proc(self: ^spSequence) -> ^spSequence ---
+	spSequence_apply :: proc(self: ^spSequence, slot: ^spSlot, attachment: ^spAttachment) ---
+	spSequence_getPath :: proc(self: ^spSequence, basePath: cstring, index: cc.int, path: cstring) ---
+
+	spTextureRegionArray_create :: proc(initialCapacity: cc.int) -> ^spTextureRegionArray ---
+	spTextureRegionArray_dispose :: proc(self: ^spTextureRegionArray) ---
+	spTextureRegionArray_clear :: proc(self: ^spTextureRegionArray) ---
+	spTextureRegionArray_setSize :: proc(self: ^spTextureRegionArray, newSize: cc.int) -> ^spTextureRegionArray ---
+	spTextureRegionArray_ensureCapacity :: proc(self: ^spTextureRegionArray, newCapacity: cc.int) ---
+	spTextureRegionArray_add :: proc(self: ^spTextureRegionArray, value: ^spTextureRegion) ---
+	spTextureRegionArray_addAll :: proc(self: ^spTextureRegionArray, other: ^spTextureRegionArray) ---
+	spTextureRegionArray_addAllValues :: proc(self: ^spTextureRegionArray, values: [^]^spTextureRegion, offset: cc.int, count: cc.int) ---
+	spTextureRegionArray_removeAt :: proc(self: ^spTextureRegionArray, index: cc.int) ---
+	spTextureRegionArray_contains :: proc(self: ^spTextureRegionArray, value: ^spTextureRegion) -> cc.bool ---
+	spTextureRegionArray_pop :: proc(self: ^spTextureRegionArray) -> ^spTextureRegion ---
+	spTextureRegionArray_peek :: proc(self: ^spTextureRegionArray) -> ^spTextureRegion ---
 
 	// [Skeleton.h] ---
+	spSkeleton_create :: proc(data: ^spSkeletonData) -> ^spSkeleton ---
+	spSkeleton_dispose :: proc(self: ^spSkeleton) ---
+	/* Caches information about bones and constraints. Must be called if bones or constraints, or weighted path attachments
+	* are added or removed. */
+	spSkeleton_updateCache :: proc(self: ^spSkeleton) ---
+	spSkeleton_updateWorldTransform :: proc(self: ^spSkeleton) ---
+	/* Sets the bones, constraints, and slots to their setup pose values. */
+	spSkeleton_setToSetupPose :: proc(self: ^spSkeleton) ---
+	/* Sets the bones and constraints to their setup pose values. */
+	spSkeleton_setBonesToSetupPose :: proc(self: ^spSkeleton) ---
+	spSkeleton_setSlotsToSetupPose :: proc(self: ^spSkeleton) ---
+	/* Returns 0 if the bone was not found. */
+	spSkeleton_findBone :: proc(self: ^spSkeleton, boneName: cstring) -> ^spBone ---
+	/* Returns 0 if the slot was not found. */
+	spSkeleton_findSlot :: proc(self: ^spSkeleton, slotName: cstring) -> ^spSlot ---
+	/* Sets the skin used to look up attachments before looking in the SkeletonData defaultSkin. Attachments from the new skin are
+	* attached if the corresponding attachment from the old skin was attached. If there was no old skin, each slot's setup mode
+	* attachment is attached from the new skin.
+	* @param skin May be 0.*/
+	spSkeleton_setSkin :: proc(self: ^spSkeleton, skin: ^spSkin) ---
+	/* Returns 0 if the skin was not found. See spSkeleton_setSkin.
+	* @param skinName May be 0. */
+	spSkeleton_setSkinByName :: proc(self: ^spSkeleton, skinName: cstring) -> cc.int ---
+	/* Returns 0 if the slot or attachment was not found. */
+	spSkeleton_getAttachmentForSlotName :: proc(self: ^spSkeleton, slotName: cstring, attachmentName: cstring) -> ^spAttachment ---
+	/* Returns 0 if the slot or attachment was not found. */
+	spSkeleton_getAttachmentForSlotIndex :: proc(self: ^spSkeleton, slotIndex: cc.int, attachmentName: cstring) -> ^spAttachment ---
+	/* Returns 0 if the slot or attachment was not found.
+	* @param attachmentName May be 0. */
+	spSkeleton_setAttachment :: proc(self: ^spSkeleton, slotName: cstring, attachmentName: cstring) -> cc.int ---
+	/* Returns 0 if the IK constraint was not found. */
+	spSkeleton_findIkConstraint :: proc(self: ^spSkeleton, constraintName: cstring) -> ^spIkConstraint ---
+	/* Returns 0 if the transform constraint was not found. */
+	spSkeleton_findTransformConstraint :: proc(self: ^spSkeleton, constraintName: cstring) -> ^spTransformConstraint ---
+	/* Returns 0 if the path constraint was not found. */
+	spSkeleton_findPathConstraint :: proc(self: ^spSkeleton, constraintName: cstring) -> ^spPathConstraint ---
 
 	// [SkeletonBinary.h] ---
+	spSkeletonBinary_createWithLoader :: proc(attachmentLoader: ^spAttachmentLoader) -> ^spSkeletonBinary ---
+	spSkeletonBinary_create :: proc(atlas: ^spAtlas) -> ^spSkeletonBinary ---
+	spSkeletonBinary_dispose :: proc(self: ^spSkeletonBinary) ---
+	spSkeletonBinary_readSkeletonData :: proc(self: ^spSkeletonBinary, binary: cc.uchar, length: cc.int) -> ^spSkeletonData ---
+	spSkeletonBinary_readSkeletonDataFile :: proc(self: ^spSkeletonBinary, path: cstring) -> ^spSkeletonData ---
 
 	// [SkeletonBounds.h] ---
+	spPolygon_create :: proc(capacity: cc.int) -> ^spPolygon ---
+	spPolygon_dispose :: proc(self: ^spPolygon) ---
+	spPolygon_containsPoint :: proc(polygon: ^spPolygon, x: cc.float, y: cc.float) -> cc.bool ---
+	spPolygon_intersectsSegment :: proc(polygon: ^spPolygon, x1: cc.float, y1: cc.float, x2: cc.float, y2: cc.float) -> cc.bool ---
+
+	spSkeletonBounds_create :: proc() -> ^spSkeletonBounds ---
+	spSkeletonBounds_dispose :: proc(self: ^spSkeletonBounds) ---
+	spSkeletonBounds_update :: proc(self: ^spSkeletonBounds, skeleton: ^spSkeleton, updateAabb: cc.bool) ---
+	/** Returns true if the axis aligned bounding box contains the point. */
+	spSkeletonBounds_aabbContainsPoint :: proc(self: ^spSkeletonBounds, x: cc.float, y: cc.float) -> cc.bool ---
+	/** Returns true if the axis aligned bounding box intersects the line segment. */
+	spSkeletonBounds_aabbIntersectsSegment :: proc(self: ^spSkeletonBounds, x1: cc.float, y1: cc.float, x2: cc.float, y2: cc.float) -> cc.bool ---
+	/** Returns true if the axis aligned bounding box intersects the axis aligned bounding box of the specified bounds. */
+	spSkeletonBounds_aabbIntersectsSkeleton :: proc(self: ^spSkeletonBounds, bounds: ^spSkeletonBounds) -> cc.bool ---
+	/** Returns the first bounding box attachment that contains the point, or null. When doing many checks, it is usually more
+	* efficient to only call this method if spSkeletonBounds_aabbContainsPoint returns true. */
+	spSkeletonBounds_containsPoint :: proc(self: ^spSkeletonBounds, x: cc.float, y: cc.float) -> ^spBoundingBoxAttachment ---
+	/** Returns the first bounding box attachment that contains the line segment, or null. When doing many checks, it is usually
+	* more efficient to only call this method if spSkeletonBounds_aabbIntersectsSegment returns true. */
+	spSkeletonBounds_intersectsSegment :: proc(self: ^spSkeletonBounds, x1: cc.float, y1: cc.float, x2: cc.float, y2: cc.float) -> ^spBoundingBoxAttachment ---
+	/** Returns the polygon for the specified bounding box, or null. */
+	spSkeletonBounds_getPolygon :: proc(self: ^spSkeletonBounds, boundingBox: ^spBoundingBoxAttachment) -> ^spPolygon ---
 
 	// [SkeletonClipping.h] ---
 	spSkeletonClipping_create :: proc() -> ^spSkeletonClipping ---

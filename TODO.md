@@ -87,35 +87,35 @@
   - [x] VertexAttachment
 - [ ] Functions
   - [ ] Animation
-  - [ ] AnimationState
-  - [ ] AnimationStateData
-  - [ ] Array
-  - [ ] Atlas
-  - [ ] AtlasAttachmentLoader
-  - [ ] Attachment
-  - [ ] AttachmentLoader
-  - [ ] Bone
-  - [ ] BoneData
-  - [ ] BoundingBoxAttachment
-  - [ ] ClippingAttachment
+  - [x] AnimationState
+  - [x] AnimationStateData
+  - [x] Array
+  - [x] Atlas
+  - [x] AtlasAttachmentLoader
+  - [x] Attachment
+  - [x] AttachmentLoader
+  - [x] Bone
+  - [x] BoneData
+  - [x] BoundingBoxAttachment
+  - [x] ClippingAttachment
   - [x] Color
-  - [ ] Debug
-  - [ ] dll
-  - [ ] Event
+  - [x] Debug
+  - [x] dll
+  - [x] Event
   - [x] EventData
   - [ ] exension
-  - [ ] IKConstraint
-  - [ ] IKConstraintData
-  - [ ] MeshAttachment
-  - [ ] PathAttachment
-  - [ ] PathConstraint
-  - [ ] PathConstraintData
-  - [ ] PointAttachment
-  - [ ] RegionAttachment
-  - [ ] Sequence
-  - [ ] Skeleton
-  - [ ] SkeletonBinary
-  - [ ] SkeletonBounds
+  - [x] IKConstraint
+  - [x] IKConstraintData
+  - [x] MeshAttachment
+  - [x] PathAttachment
+  - [x] PathConstraint
+  - [x] PathConstraintData
+  - [x] PointAttachment
+  - [x] RegionAttachment
+  - [x] Sequence
+  - [x] Skeleton
+  - [x] SkeletonBinary
+  - [x] SkeletonBounds
   - [x] SkeletonClipping
   - [x] SkeletonData
   - [x] SkeletonJson
