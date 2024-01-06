@@ -508,7 +508,7 @@ spMeshAttachment :: struct {
 	regionUVs:      [^]cc.float,
 	uvs:            [^]cc.float,
 	trianglesCount: cc.int,
-	triangles:      cc.ushort,
+	triangles:      [^]cc.ushort,
 	color:          spColor,
 	hullLength:     cc.int,
 	parentMesh:     ^spMeshAttachment,
@@ -1326,6 +1326,8 @@ foreign lib {
 	spEventData_dispose :: proc(self: ^spEventData) ---
 
 	// [extension.h] ---
+	_spReadFile :: proc(path: cstring, length: ^cc.int) -> cstring ---
+
 
 	// [IkConstraint.h] ---
 	spIkConstraint_create :: proc(data: ^spIkConstraintData, skeleton: ^spSkeleton) -> ^spIkConstraint ---
@@ -1588,8 +1590,11 @@ foreign lib {
 	spVertexAttachment_copyTo :: proc(self: ^spVertexAttachment, other: ^spVertexAttachment) ---
 }
 
-// void _spAtlasPage_createTexture(spAtlasPage *self, const char *path);
-
-// void _spAtlasPage_disposeTexture(spAtlasPage *self);
-
-// char *_spUtil_readFile(const char *path, int *length);
+// NOTE: Code that calls _spUtil_readFile is supposed to deallocate the 
+// returned memory once it is done processing the data. All code in spine-c 
+// that uses this function will make sure the memory is deallocated so you do 
+// not have to worry about it. 
+@(export)
+_spUtil_readFile :: proc(path: cstring, length: ^cc.int) -> cstring {
+	return _spReadFile(path, length)
+}

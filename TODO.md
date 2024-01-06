@@ -18,7 +18,7 @@
   - [x] dll
   - [x] Event
   - [x] EventData
-  - [x] exension
+  - [x] extension
   - [x] IKConstraint
   - [x] IKConstraintData
   - [x] MeshAttachment
@@ -61,7 +61,7 @@
   - [x] dll
   - [x] Event
   - [x] EventData
-  - [x] exension
+  - [x] extension
   - [x] IKConstraint
   - [x] IKConstraintData
   - [x] MeshAttachment
@@ -85,8 +85,8 @@
   - [x] TransformConstraintData
   - [x] Version
   - [x] VertexAttachment
-- [ ] Functions
-  - [ ] Animation
+- [x] Functions
+  - [x] Animation
   - [x] AnimationState
   - [x] AnimationStateData
   - [x] Array
@@ -103,7 +103,7 @@
   - [x] dll
   - [x] Event
   - [x] EventData
-  - [ ] exension
+  - [ ] extension
   - [x] IKConstraint
   - [x] IKConstraintData
   - [x] MeshAttachment
