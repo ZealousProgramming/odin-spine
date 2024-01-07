@@ -17,10 +17,10 @@ cleanup: #type proc()
 
 main :: proc() {
 	// --- Spineboy
-	// setup = spineboy_setup
-	// cleanup = spineboy_cleanup
-	// update = spineboy_update
-	// draw = spineboy_draw
+	setup = spineboy_setup
+	cleanup = spineboy_cleanup
+	update = spineboy_update
+	draw = spineboy_draw
 
 	// --- Windmill
 	// setup = windmill_setup
@@ -40,12 +40,12 @@ main :: proc() {
 	// update = dragon_update
 	// draw = dragon_draw
 
-
-	rl.InitWindow(
+	osrl.spine_raylib_init(
 		cast(i32)SCREEN_WIDTH,
 		cast(i32)SCREEN_HEIGHT,
 		"odin-spine - EXAMPLES",
 	)
+
 	if setup != nil {
 		setup()
 	}
@@ -65,11 +65,9 @@ main :: proc() {
 	camera.offset = rl.Vector2{0.0, 0.0}
 	camera.rotation = 0.0
 	camera.zoom = 1.0
-
 	camera_speed: f32 = 800.0
 
 	rl.SetTargetFPS(60)
-
 
 	for !rl.WindowShouldClose() {
 		delta := rl.GetFrameTime()
@@ -124,7 +122,5 @@ main :: proc() {
 
 	}
 
-	osrl.texture_2d_destroy()
-	rl.CloseWindow()
-
+	osrl.spine_raylib_cleanup()
 }

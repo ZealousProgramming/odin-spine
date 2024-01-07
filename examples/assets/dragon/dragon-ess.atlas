@@ -1,5 +1,6 @@
 dragon-ess.png
 size:1274,1038
+filter:Linear,Linear
 pma:true
 back
 bounds:847,71,190,185

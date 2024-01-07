@@ -17,7 +17,7 @@ A basic implementation is provided for raylib via `odin_spine:core/raylib`, but 
       - [x] Windows
       - [ ] Linux (Do not have access to a Linux machine)
       - [ ] MacOS (Do not have access to a MacOS machine)
-    - [x] Base Implementation (Spineboy, Windmill)
+    - [x] Base Implementation (Spineboy, Windmill, Dragon)
     - [ ] Clipping (Coin)
     - [ ] Batched Meshes
 

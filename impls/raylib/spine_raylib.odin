@@ -13,16 +13,37 @@ SP_LAYER_SPACING_BASE :: #config(SP_LAYER_SPACING_BASE, 0)
 SP_LAYER_SPACING :: #config(SP_LAYER_SPACING, 0)
 
 MAX_TEXTURES :: 10
+@(private = "file")
 textures: [^]rl.Texture2D = raw_data(&[MAX_TEXTURES]rl.Texture2D{})
+@(private = "file")
 texture_index := 0
+@(private = "file")
 anti_z_index := SP_LAYER_SPACING_BASE
 MAX_VERTICES_PER_ATTACHMENT :: 2048
+@(private = "file")
 world_vertices_positions := raw_data(&[MAX_VERTICES_PER_ATTACHMENT]cc.float{})
 
+@(private = "file")
 vertices := raw_data(&[MAX_VERTICES_PER_ATTACHMENT]os.Vertex{})
 VERTEX_ORDER_NORMAL: [^]cc.int = raw_data(&[4]cc.int{0, 1, 2, 4})
 VERTEX_ORDER_INVERSE: [^]cc.int = raw_data(&[4]cc.int{4, 2, 1, 0})
 
+@(private = "file")
+clipper: ^os.spSkeletonClipping
+
+spine_raylib_init :: proc(width: i32, height: i32, title: cstring) {
+	rl.InitWindow(width, height, title)
+
+	clipper = os.spSkeletonClipping_create()
+}
+
+spine_raylib_cleanup :: proc() {
+	os.spSkeletonClipping_dispose(clipper)
+
+	texture_2d_destroy()
+
+	rl.CloseWindow()
+}
 
 texture_2d_create :: proc(path: cstring) -> ^rl.Texture2D {
 	textures[texture_index] = rl.LoadTexture(path)
@@ -43,8 +64,15 @@ texture_2d_destroy :: proc() {
 
 @(export)
 _spAtlasPage_createTexture :: proc(self: ^os.spAtlasPage, path: cstring) {
-
 	t: ^rl.Texture2D = texture_2d_create(path)
+
+	if self.magFilter == .SP_ATLAS_LINEAR {
+		rl.SetTextureFilter(t^, rl.TextureFilter.BILINEAR)
+	}
+
+	if self.uWrap == .SP_ATLAS_REPEAT && self.vWrap == .SP_ATLAS_REPEAT {
+		rl.SetTextureWrap(t^, .REPEAT)
+	}
 
 	self.rendererObject = t
 	self.width = t.width
@@ -216,9 +244,12 @@ draw_skeleton :: proc(
 	skeleton: ^os.spSkeleton,
 	position: rl.Vector3,
 	PMA: cc.bool,
-) {
+) // PremultipliedAlpha
+{
 	using rl
 	using os
+
+	if skeleton.color.a == 0 {return}
 
 	blend_mode: cc.int = 4 //This mode doesnt exist
 	vertex_order: [^]cc.int =
@@ -239,13 +270,25 @@ draw_skeleton :: proc(
 		attachment: ^spAttachment = slot.attachment
 		if attachment == nil {continue}
 
+		// Early out if slot is invisible
+		// if slot.color.a == 0 || !slot.bone.active {
+		// 	spSkeletonClipping_clipEnd(clipper, slot)
+		// 	continue
+		// }
+
 		// Fill the vertices array depending on the type of attachment
 		texture: ^Texture = nil
 		vertexIndex: cc.int = 0
-		if (attachment.type == .SP_ATTACHMENT_REGION) {
+		if attachment.type == .SP_ATTACHMENT_REGION {
 			// Cast to an spRegionAttachment so we can get the rendererObject
 			// and compute the world vertices
 			regionAttachment: ^spRegionAttachment = cast(^spRegionAttachment)attachment
+
+			// Early out if slot is invisible
+			// if regionAttachment.color.a == 0 {
+			// 	spSkeletonClipping_clipEnd(clipper, slot)
+			// 	continue
+			// }
 
 			// Calculate the tinting color based on the skeleton's color
 			// and the slot's color. Each color channel is given in the
@@ -362,27 +405,27 @@ draw_skeleton :: proc(
 				&vertexIndex,
 			)
 
-			if (cast(i32)slot.data.blendMode != blend_mode) {
+			if cast(i32)slot.data.blendMode != blend_mode {
 				EndBlendMode()
 				blend_mode = cast(i32)slot.data.blendMode
 
 				switch blend_mode {
 				case 1:
-					//Additive
+					// Additive
 					rlSetBlendFactors(
 						PMA ? RL_ONE : RL_SRC_ALPHA,
 						RL_ONE,
 						RL_FUNC_ADD,
 					)
 				case 2:
-					//Multiply
+					// Multiply
 					rlSetBlendFactors(
 						RL_DST_COLOR,
 						RL_ONE_MINUS_SRC_ALPHA,
 						RL_FUNC_ADD,
 					)
 				case 3:
-					//Screen
+					// Screen
 					rlSetBlendFactors(
 						RL_ONE,
 						RL_ONE_MINUS_SRC_COLOR,
@@ -405,6 +448,13 @@ draw_skeleton :: proc(
 			// Cast to an spMeshAttachment so we can get the rendererObject
 			// and compute the world vertices
 			mesh: ^spMeshAttachment = cast(^spMeshAttachment)attachment
+
+
+			// Early out if slot is invisible
+			// if mesh.color.a == 0 {
+			// 	spSkeletonClipping_clipEnd(clipper, slot)
+			// 	continue
+			// }
 
 			// Check the number of vertices in the mesh attachment. If it is bigger
 			// than our scratch buffer, we don't render the mesh. We do this here
@@ -468,21 +518,21 @@ draw_skeleton :: proc(
 
 				switch blend_mode {
 				case 1:
-					//Additive
+					// Additive
 					rlSetBlendFactors(
 						PMA ? RL_ONE : RL_SRC_ALPHA,
 						RL_ONE,
 						RL_FUNC_ADD,
 					)
 				case 2:
-					//Multiply
+					// Multiply
 					rlSetBlendFactors(
 						RL_DST_COLOR,
 						RL_ONE_MINUS_SRC_ALPHA,
 						RL_FUNC_ADD,
 					)
 				case 3:
-					//Screen
+					// Screen
 					rlSetBlendFactors(
 						RL_ONE,
 						RL_ONE_MINUS_SRC_COLOR,
@@ -499,7 +549,17 @@ draw_skeleton :: proc(
 
 				BeginBlendMode(BlendMode.CUSTOM)
 			}
-			//             // Draw the mesh we created for the attachment
+
+			// if spSkeletonClipping_isClipping(clipper) {
+			// 	spSkeletonClipping_clipTriangles(clipper, vertices, verticesCount << 1, indices, indicesCount, uvs, 2);
+			// 	vertices = clipper->clippedVertices->items;
+			// 	verticesCount = clipper->clippedVertices->size >> 1;
+			// 	uvs = clipper->clippedUVs->items;
+			// 	indices = clipper->clippedTriangles->items;
+			// 	indicesCount = clipper->clippedTriangles->size;
+			// }
+
+			// Draw the mesh we created for the attachment
 			draw_mesh(
 				vertices,
 				0,
@@ -509,7 +569,12 @@ draw_skeleton :: proc(
 				vertex_order,
 			)
 		}
+		// else if attachment.type == .SP_ATTACHMENT_CLIPPING {
+		// 	clip: ^spClippingAttachment = cast(^spClippingAttachment)slot.attachment
+		// 	spSkeletonClipping_clipStart(clipper, slot, clip)
+		// 	continue
+		// }
 	}
 
-	EndBlendMode() //Exit out
+	EndBlendMode()
 }

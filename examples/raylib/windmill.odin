@@ -15,7 +15,7 @@ animation_state: ^osc.spAnimationState
 @(private = "file")
 skeleton_position := rl.Vector3 {
 	cast(f32)(SCREEN_WIDTH / 2),
-	cast(f32)SCREEN_HEIGHT - 200,
+	cast(f32)SCREEN_HEIGHT - 250,
 	0,
 }
 

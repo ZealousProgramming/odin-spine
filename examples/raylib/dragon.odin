@@ -28,17 +28,17 @@ dragon_setup :: proc() {
 		nil,
 	)
 
-	json := osc.spSkeletonJson_create(atlas)
-	defer osc.spSkeletonJson_dispose(json)
+	binary := osc.spSkeletonBinary_create(atlas)
+	defer osc.spSkeletonBinary_dispose(binary)
 
-	skeleton_data := osc.spSkeletonJson_readSkeletonDataFile(
-		json,
-		"./examples/assets/dragon/json/dragon-ess.json",
+	skeleton_data := osc.spSkeletonBinary_readSkeletonDataFile(
+		binary,
+		"./examples/assets/dragon/binary/dragon-ess.skel",
 	)
 
 	if skeleton_data == nil {
-		fmt.eprintf("%v\n", json.error)
-		osc.spSkeletonJson_dispose(json)
+		// fmt.eprintf("%v\n", json.error)
+		osc.spSkeletonBinary_dispose(binary)
 		return
 	}
 
