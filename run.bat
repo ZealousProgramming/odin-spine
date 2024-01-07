@@ -1,3 +1,5 @@
 @ECHO OFF
-odin run ./tests/test-spine.odin -file -out:./bin/odin-spine.exe -debug
+
+REM RAYLIB EXAMPLES
+odin run ./examples/raylib -file -out:./bin/odin-spine-examples.exe -debug -collection:odin_spine=../odin-spine
 

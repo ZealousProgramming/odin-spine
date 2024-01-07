@@ -3,9 +3,9 @@ package spine_raylib
 import cc "core:c"
 import fmt "core:fmt"
 
-import rl "vendor:raylib"
-
 import os "odin_spine:core"
+
+import rl "vendor:raylib"
 
 SP_DRAW_DOUBLE_FACED :: #config(SP_DRAW_DOUBLE_FACED, false)
 SP_RENDER_WIREFRAME :: #config(SP_RENDER_WIREFRAME, false)
@@ -37,6 +37,7 @@ texture_2d_create :: proc(path: cstring) -> ^rl.Texture2D {
 texture_2d_destroy :: proc() {
 	for texture_index > 0 {
 		rl.UnloadTexture(textures[texture_index])
+		texture_index -= 1
 	}
 }
 
@@ -68,8 +69,7 @@ add_vertex :: proc(
 	b: cc.float,
 	a: cc.float,
 	index: ^cc.int,
-) // allocator := context.allocator
-{
+) {
 	vertex: ^os.Vertex = &vertices[index^]
 	vertex.x = x
 	vertex.y = y
@@ -84,7 +84,8 @@ add_vertex :: proc(
 }
 
 
-engine_draw_region :: proc(
+@(private = "file")
+draw_region :: proc(
 	vertices: [^]os.Vertex,
 	texture: ^rl.Texture,
 	position: rl.Vector3,
@@ -135,7 +136,9 @@ engine_draw_region :: proc(
 	}
 
 }
-engine_draw_mesh :: proc(
+
+@(private = "file")
+draw_mesh :: proc(
 	vertices: [^]os.Vertex,
 	start: cc.int,
 	count: cc.int,
@@ -152,7 +155,6 @@ engine_draw_mesh :: proc(
 	defer rlPopMatrix()
 
 	for vertexIndex: cc.int = start; vertexIndex < count; vertexIndex += 3 {
-		// rlEnableTexture(texture.id)
 		rlSetTexture(texture.id)
 
 		// >
@@ -179,9 +181,10 @@ engine_draw_mesh :: proc(
 		rlEnd()
 		// />
 		when SP_DRAW_DOUBLE_FACED {
-			// f"double sided not supported for mesh based spine files\n",
-			// )
-			// exit(-1)
+			fmt.errorln(
+				"Doubled sided not supported for mesh based spine files\n",
+			)
+
 			return
 		}
 
@@ -205,9 +208,7 @@ engine_draw_mesh :: proc(
 
 	}
 
-
 	rlSetTexture(0)
-	// rlDisableTexture()
 }
 
 
@@ -220,13 +221,13 @@ draw_skeleton :: proc(
 	using os
 
 	blend_mode: cc.int = 4 //This mode doesnt exist
-	BeginBlendMode(BlendMode.ALPHA)
 	vertex_order: [^]cc.int =
 		(skeleton.scaleX * skeleton.scaleY < 0) \
 		? VERTEX_ORDER_NORMAL \
 		: VERTEX_ORDER_INVERSE
 	// For each slot in the draw order array of the skeleton
 	anti_z_index = SP_LAYER_SPACING_BASE
+
 	// TODO(devon):  Might need start at 1
 	for i: cc.int = 0; i < skeleton.slotsCount; i += 1 {
 		anti_z_index -= SP_LAYER_SPACING
@@ -237,7 +238,6 @@ draw_skeleton :: proc(
 		// attachment is active on the slot
 		attachment: ^spAttachment = slot.attachment
 		if attachment == nil {continue}
-
 
 		// Fill the vertices array depending on the type of attachment
 		texture: ^Texture = nil
@@ -362,48 +362,45 @@ draw_skeleton :: proc(
 				&vertexIndex,
 			)
 
-			// if (cast(i32)slot.data.blendMode != blend_mode) {
-			// 	EndBlendMode() //Need this line for blending to work for some reason
-			// 	blend_mode = cast(i32)slot.data.blendMode
+			if (cast(i32)slot.data.blendMode != blend_mode) {
+				EndBlendMode()
+				blend_mode = cast(i32)slot.data.blendMode
 
-			// 	switch blend_mode {
-			// 	case 1:
-			// 		// OLD SIG
-			// 		// rlSetBlendMode(int glSrcFactor, int glDstFactor, int glEquation); 
-			// 		//Additive
-			// 		rlSetBlendFactors(
-			// 			PMA ? RL_ONE : RL_SRC_ALPHA,
-			// 			RL_ONE,
-			// 			RL_FUNC_ADD,
-			// 		)
-			// 	case 2:
-			// 		//Multiply
-			// 		rlSetBlendFactors(
-			// 			RL_DST_COLOR,
-			// 			RL_ONE_MINUS_SRC_ALPHA,
-			// 			RL_FUNC_ADD,
-			// 		)
-			// 	case 3:
-			// 		//Screen
-			// 		rlSetBlendFactors(
-			// 			RL_ONE,
-			// 			RL_ONE_MINUS_SRC_COLOR,
-			// 			RL_FUNC_ADD,
-			// 		)
-			// 	case:
-			// 		// Normal
-			// 		// rlSetBlendMode(cast(i32)BlendMode.ALPHA)
-			// 		rlSetBlendFactors(
-			// 			PMA ? RL_ONE : RL_SRC_ALPHA,
-			// 			RL_ONE_MINUS_SRC_ALPHA,
-			// 			RL_FUNC_ADD,
-			// 		)
-			// 	}
+				switch blend_mode {
+				case 1:
+					//Additive
+					rlSetBlendFactors(
+						PMA ? RL_ONE : RL_SRC_ALPHA,
+						RL_ONE,
+						RL_FUNC_ADD,
+					)
+				case 2:
+					//Multiply
+					rlSetBlendFactors(
+						RL_DST_COLOR,
+						RL_ONE_MINUS_SRC_ALPHA,
+						RL_FUNC_ADD,
+					)
+				case 3:
+					//Screen
+					rlSetBlendFactors(
+						RL_ONE,
+						RL_ONE_MINUS_SRC_COLOR,
+						RL_FUNC_ADD,
+					)
+				case:
+					// Normal
+					rlSetBlendFactors(
+						PMA ? RL_ONE : RL_SRC_ALPHA,
+						RL_ONE_MINUS_SRC_ALPHA,
+						RL_FUNC_ADD,
+					)
+				}
 
-			// 	BeginBlendMode(BlendMode.CUSTOM)
-			// }
+				BeginBlendMode(BlendMode.CUSTOM)
+			}
 
-			engine_draw_region(vertices, texture, position, vertex_order)
+			draw_region(vertices, texture, position, vertex_order)
 		} else if attachment.type == .SP_ATTACHMENT_MESH {
 			// Cast to an spMeshAttachment so we can get the rendererObject
 			// and compute the world vertices
@@ -424,7 +421,6 @@ draw_skeleton :: proc(
 				skeleton.color.g * slot.color.g * mesh.color.g * alpha
 			tintB: cc.float =
 				skeleton.color.b * slot.color.b * mesh.color.b * alpha
-
 
 			// Our engine specific Texture is stored in the spAtlasRegion which was
 			// assigned to the attachment on load. It represents the texture atlas
@@ -466,45 +462,45 @@ draw_skeleton :: proc(
 				)
 			}
 
-			// if (cast(i32)slot.data.blendMode != blend_mode) {
-			// 	EndBlendMode()
-			// 	blend_mode = cast(i32)slot.data.blendMode
-			// 	switch blend_mode {
-			// 	case 1:
-			// 		//Additive
-			// 		rlSetBlendFactors(
-			// 			PMA ? RL_ONE : RL_SRC_ALPHA,
-			// 			RL_ONE,
-			// 			RL_FUNC_ADD,
-			// 		)
-			// 	case 2:
-			// 		//Multiply
-			// 		rlSetBlendFactors(
-			// 			RL_DST_COLOR,
-			// 			RL_ONE_MINUS_SRC_ALPHA,
-			// 			RL_FUNC_ADD,
-			// 		)
-			// 	case 3:
-			// 		//Screen
-			// 		rlSetBlendFactors(
-			// 			RL_ONE,
-			// 			RL_ONE_MINUS_SRC_COLOR,
-			// 			RL_FUNC_ADD,
-			// 		)
-			// 	case:
-			// 		// rlSetBlendMode(cast(i32)BlendMode.ALPHA)
-			// 		// Normal
-			// 		rlSetBlendFactors(
-			// 			PMA ? RL_ONE : RL_SRC_ALPHA,
-			// 			RL_ONE_MINUS_SRC_ALPHA,
-			// 			RL_FUNC_ADD,
-			// 		)
-			// 	}
+			if (cast(i32)slot.data.blendMode != blend_mode) {
+				EndBlendMode()
+				blend_mode = cast(i32)slot.data.blendMode
 
-			// 	BeginBlendMode(BlendMode.CUSTOM)
-			// }
+				switch blend_mode {
+				case 1:
+					//Additive
+					rlSetBlendFactors(
+						PMA ? RL_ONE : RL_SRC_ALPHA,
+						RL_ONE,
+						RL_FUNC_ADD,
+					)
+				case 2:
+					//Multiply
+					rlSetBlendFactors(
+						RL_DST_COLOR,
+						RL_ONE_MINUS_SRC_ALPHA,
+						RL_FUNC_ADD,
+					)
+				case 3:
+					//Screen
+					rlSetBlendFactors(
+						RL_ONE,
+						RL_ONE_MINUS_SRC_COLOR,
+						RL_FUNC_ADD,
+					)
+				case:
+					// Normal
+					rlSetBlendFactors(
+						PMA ? RL_ONE : RL_SRC_ALPHA,
+						RL_ONE_MINUS_SRC_ALPHA,
+						RL_FUNC_ADD,
+					)
+				}
+
+				BeginBlendMode(BlendMode.CUSTOM)
+			}
 			//             // Draw the mesh we created for the attachment
-			engine_draw_mesh(
+			draw_mesh(
 				vertices,
 				0,
 				vertexIndex,
@@ -515,8 +511,5 @@ draw_skeleton :: proc(
 		}
 	}
 
-	// for i: int = 0; i < MAX_VERTICES_PER_ATTACHMENT; i += 1 {
-	// 	fmt.println(vertices[i])
-	// }
 	EndBlendMode() //Exit out
 }

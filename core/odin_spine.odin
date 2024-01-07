@@ -33,7 +33,6 @@ import cc "core:c"
 import lc "core:c/libc"
 import "core:fmt"
 
-
 #assert(size_of(rune) == size_of(cc.int))
 
 // - C Imports -
@@ -48,7 +47,6 @@ when ODIN_OS == .Windows {
 SPINE_MAJOR_VERSION :: 4
 SPINE_MINOR_VERSION :: 1
 SPINE_VERSION_STRING :: "4.1"
-
 
 // Found in *.h
 SP_MAX_PROPERTY_IDS :: 3
@@ -267,9 +265,14 @@ spBlendMode :: enum cc.int {
 	SP_BLEND_MODE_SCREEN,
 }
 
-
 // - Structs -
 // --------------------------------------
+
+Vertex :: struct {
+	x, y:       cc.float,
+	u, v:       cc.float,
+	r, g, b, a: cc.float,
+}
 
 spAnimation :: struct {
 	name:        cstring,
@@ -1045,11 +1048,8 @@ spTimelineArray :: struct {
 	items:    [^]^spTimeline,
 }
 
-
 // - Procedures -
 // --------------------------------------
-
-
 @(default_calling_convention = "c")
 foreign lib {
 	// [Animation.h] ---
@@ -1194,7 +1194,6 @@ foreign lib {
 	spTrackEntryArray_pop :: proc(self: ^spTrackEntryArray) -> ^spTrackEntry ---
 	spTrackEntryArray_peek :: proc(self: ^spTrackEntryArray) -> ^spTrackEntry ---
 
-
 	// [AnimationStateData.h] ---
 	spAnimationStateData_create :: proc(skeletonData: ^spSkeletonData) -> ^spAnimationStateData ---
 	spAnimationStateData_dispose :: proc(self: ^spAnimationStateData) ---
@@ -1243,7 +1242,6 @@ foreign lib {
 	spKeyValueArray_contains :: proc(self: ^spKeyValueArray, value: spKeyValue) -> cc.bool ---
 	spKeyValueArray_pop :: proc(self: ^spKeyValueArray) -> spKeyValue ---
 	spKeyValueArray_peek :: proc(self: ^spKeyValueArray) -> spKeyValue ---
-
 
 	// [AtlasAttachmentLoader.h] ---
 	spAtlasAttachmentLoader_create :: proc(atlas: ^spAtlas) -> spAtlasAttachmentLoader ---
@@ -1327,7 +1325,6 @@ foreign lib {
 
 	// [extension.h] ---
 	_spReadFile :: proc(path: cstring, length: ^cc.int) -> cstring ---
-
 
 	// [IkConstraint.h] ---
 	spIkConstraint_create :: proc(data: ^spIkConstraintData, skeleton: ^spSkeleton) -> ^spIkConstraint ---
@@ -1557,7 +1554,6 @@ foreign lib {
 	spPathConstraintDataArray_contains :: proc(self: ^spPathConstraintDataArray, value: ^spPathConstraintData) -> cc.bool ---
 	spPathConstraintDataArray_pop :: proc(self: ^spPathConstraintDataArray) -> ^spPathConstraintData ---
 	spPathConstraintDataArray_peek :: proc(self: ^spPathConstraintDataArray) -> ^spPathConstraintData ---
-
 
 	// [Slot.h] ---
 	spSlot_create :: proc(data: ^spSlotData, bone: ^spBone) -> ^spSlot ---
