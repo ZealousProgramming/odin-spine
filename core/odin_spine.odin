@@ -30,8 +30,6 @@
 package core
 
 import cc "core:c"
-import lc "core:c/libc"
-import "core:fmt"
 
 #assert(size_of(rune) == size_of(cc.int))
 
