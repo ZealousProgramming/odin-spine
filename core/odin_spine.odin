@@ -44,14 +44,16 @@ when size_of(rawptr) == 8 {
 	#assert(size_of(spRegionAttachment) == 184)
 	#assert(size_of(spMeshAttachment) == 216)
 	#assert(size_of(spSkeleton) == 144)
-	#assert(size_of(spTrackEntry) == 192 && offset_of(spTrackEntry, trackTime) == 100)
+	#assert(
+		size_of(spTrackEntry) == 192 &&
+		offset_of(spTrackEntry, trackTime) == 100,
+	)
 }
 
 // - C Imports -
 // --------------------------------------
 when ODIN_OS == .Windows {
-	@(extra_linker_flags = "/NODEFAULTLIB:msvcrtd")
-	foreign import lib {"../lib/windows/spine-c.lib", "system:ucrt.lib"}
+	foreign import lib "../lib/windows/spine-c.lib"
 } else when ODIN_OS == .Darwin {
 	foreign import lib "../lib/macos/libspine-c.a"
 } else when ODIN_OS == .Linux {
