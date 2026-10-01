@@ -35,11 +35,29 @@ import "core:fmt"
 
 #assert(size_of(rune) == size_of(cc.int))
 
+// - Layout checks -
+// --------------------------------------
+// Sizes and offsets measured from the spine-c 4.1 headers on 64-bit targets.
+// spine-c declares every boolean as a C int, so the bindings use b32
+when size_of(rawptr) == 8 {
+	#assert(size_of(spAtlasPage) == 72 && offset_of(spAtlasPage, next) == 64)
+	#assert(size_of(spBone) == 128 && offset_of(spBone, active) == 124)
+	#assert(size_of(spSlot) == 80)
+	#assert(size_of(spRegionAttachment) == 184)
+	#assert(size_of(spMeshAttachment) == 216)
+	#assert(size_of(spSkeleton) == 144)
+	#assert(size_of(spTrackEntry) == 192 && offset_of(spTrackEntry, trackTime) == 100)
+}
+
 // - C Imports -
 // --------------------------------------
 when ODIN_OS == .Windows {
 	@(extra_linker_flags = "/NODEFAULTLIB:msvcrtd")
 	foreign import lib {"../lib/windows/spine-c.lib", "system:ucrt.lib"}
+} else when ODIN_OS == .Darwin {
+	foreign import lib "../lib/macos/libspine-c.a"
+} else when ODIN_OS == .Linux {
+	foreign import lib {"../lib/linux/libspine-c.a", "system:m"}
 }
 
 // - Constants -
@@ -323,7 +341,7 @@ spAtlasPage :: struct {
 	uWrap, vWrap:         spAtlasWrap,
 	rendererObject:       rawptr,
 	width, height:        cc.int,
-	pma:                  cc.bool,
+	pma:                  b32,
 	next:                 ^spAtlasPage,
 }
 
@@ -378,8 +396,8 @@ spBone :: struct {
 	shearX, shearY, ashearX, ashearY: cc.float,
 	a, b, c, d:                       cc.float,
 	worldX, worldY:                   cc.float,
-	sorted:                           cc.bool,
-	active:                           cc.bool,
+	sorted:                           b32,
+	active:                           b32,
 }
 
 spBoneData :: struct {
@@ -392,7 +410,7 @@ spBoneData :: struct {
 	scaleX, scaleY: cc.float,
 	shearX, shearY: cc.float,
 	transformMode:  spTransformMode,
-	skinRequired:   cc.bool,
+	skinRequired:   b32,
 	color:          spColor,
 }
 
@@ -470,24 +488,24 @@ spIkConstraint :: struct {
 	bones:         [^]^spBone,
 	target:        ^spBone,
 	bendDirection: cc.int,
-	compress:      cc.bool,
-	stretch:       cc.bool,
+	compress:      b32,
+	stretch:       b32,
 	mix:           cc.float,
 	softness:      cc.float,
-	active:        cc.bool,
+	active:        b32,
 }
 
 spIkConstraintData :: struct {
 	name:          cstring,
 	order:         cc.int,
-	skinRequired:  cc.bool,
+	skinRequired:  b32,
 	bonesCount:    cc.int,
 	bones:         [^]^spBoneData,
 	target:        ^spBoneData,
 	bendDirection: cc.int,
-	compress:      cc.bool,
-	stretch:       cc.bool,
-	uniform:       cc.bool,
+	compress:      b32,
+	stretch:       b32,
+	uniform:       b32,
 	mix:           cc.float,
 	softness:      cc.float,
 }
@@ -524,8 +542,8 @@ spPathAttachment :: struct {
 	super:         spVertexAttachment,
 	lengthsLength: cc.int,
 	lengths:       [^]cc.float,
-	closed:        cc.bool,
-	constantSpeed: cc.bool,
+	closed:        b32,
+	constantSpeed: b32,
 	color:         spColor,
 }
 
@@ -549,13 +567,13 @@ spPathConstraint :: struct {
 	lengthsCount:   cc.int,
 	lengths:        [^]cc.float,
 	segments:       [10]cc.float,
-	active:         cc.bool,
+	active:         b32,
 }
 
 spPathConstraintData :: struct {
 	name:           cstring,
 	order:          cc.int,
-	skinRequired:   cc.bool,
+	skinRequired:   b32,
 	bonesCount:     cc.int,
 	bones:          [^]^spBoneData,
 	target:         ^spSlotData,
@@ -863,11 +881,11 @@ spTrackEntry :: struct {
 		entry: ^spTrackEntry,
 		event: ^spEvent,
 	),
-	trackIndex:                                                     cc.bool,
-	loop:                                                           cc.bool,
-	holdPrevious:                                                   cc.bool,
-	reverse:                                                        cc.bool,
-	shortestRotation:                                               cc.bool,
+	trackIndex:                                                     cc.int,
+	loop:                                                           b32,
+	holdPrevious:                                                   b32,
+	reverse:                                                        b32,
+	shortestRotation:                                               b32,
 	eventThreshold, attachmentThreshold, drawOrderThreshold:        cc.float,
 	animationStart, animationEnd, animationLast, nextAnimationLast: cc.float,
 	delay:                                                          cc.float,
@@ -894,13 +912,13 @@ spTransformConstraint :: struct {
 	mixX, mixY:           cc.float,
 	mixScaleX, mixScaleY: cc.float,
 	mixShearY:            cc.float,
-	active:               cc.bool,
+	active:               b32,
 }
 
 spTransformConstraintData :: struct {
 	name:                       cstring,
 	order:                      cc.int,
-	skinRequired:               cc.bool,
+	skinRequired:               b32,
 	bonesCount:                 cc.int,
 	bones:                      [^]^spBoneData,
 	target:                     ^spBoneData,
@@ -912,8 +930,8 @@ spTransformConstraintData :: struct {
 	offsetX, offsetY:           cc.float,
 	offsetScaleX, offsetScaleY: cc.float,
 	offsetShearY:               cc.float,
-	relative:                   cc.bool,
-	local:                      cc.bool,
+	relative:                   b32,
+	local:                      b32,
 }
 
 spTransformConstraintTimeline :: struct {
@@ -1055,7 +1073,7 @@ foreign lib {
 	// [Animation.h] ---
 	spAnimation_create :: proc(name: cstring, timelines: ^spTimelineArray, duration: cc.float) -> ^spAnimation ---
 	spAnimation_dispose :: proc(self: ^spAnimation) ---
-	spAnimation_hasTimeline :: proc(self: ^spAnimation, ids: [^]spPropertyId, idsCount: cc.int) -> cc.bool ---
+	spAnimation_hasTimeline :: proc(self: ^spAnimation, ids: [^]spPropertyId, idsCount: cc.int) -> b32 ---
 	/** Poses the skeleton at the specified time for this animation.
 	* @param lastTime The last time the animation was applied.
 	* @param events Any triggered events are added. May be null.*/
@@ -1116,7 +1134,7 @@ foreign lib {
 	spDrawOrderTimeline_create :: proc(framesCount: cc.int, slotsCount: cc.int) -> ^spDrawOrderTimeline ---
 	spDrawOrderTimeline_setFrame :: proc(self: ^spDrawOrderTimeline, frameIndex: cc.int, time: cc.float, drawOrder: [^]cc.int) ---
 	spIkConstraintTimeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, transformConstraintIndex: cc.int) -> ^spIkConstraintTimeline ---
-	spIkConstraintTimeline_setFrame :: proc(self: ^spIkConstraintTimeline, frameIndex: cc.int, time: cc.float, mix: cc.float, softness: cc.float, bendDirection: cc.float, compress: cc.bool, stretch: cc.bool) ---
+	spIkConstraintTimeline_setFrame :: proc(self: ^spIkConstraintTimeline, frameIndex: cc.int, time: cc.float, mix: cc.float, softness: cc.float, bendDirection: cc.float, compress: b32, stretch: b32) ---
 	spTransformConstraintTimeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, transformConstraintIndex: cc.int) -> ^spTransformConstraintTimeline ---
 	spTransformConstraintTimeline_setFrame :: proc(self: ^spTransformConstraintTimeline, frameIndex: cc.int, time: cc.float, mixRotate: cc.float, mixX: cc.float, mixY: cc.float, mixScaleX: cc.float, mixScaleY: cc.float, mixShearY: cc.float) ---
 	spPathConstraintPositionTimeline_create :: proc(framesCount: cc.int, bezierCount: cc.int, pathConstraintIndex: cc.int) -> ^spPathConstraintPositionTimeline ---
@@ -1136,7 +1154,7 @@ foreign lib {
 	spPropertyIdArray_addAll :: proc(self: ^spPropertyIdArray, other: ^spPropertyIdArray) ---
 	spPropertyIdArray_addAllValues :: proc(self: ^spPropertyIdArray, values: [^]spPropertyId, offset: cc.int, count: cc.int) ---
 	spPropertyIdArray_removeAt :: proc(self: ^spPropertyIdArray, index: cc.int) ---
-	spPropertyIdArray_contains :: proc(self: ^spPropertyIdArray, value: spPropertyId) -> cc.bool ---
+	spPropertyIdArray_contains :: proc(self: ^spPropertyIdArray, value: spPropertyId) -> b32 ---
 	spPropertyIdArray_pop :: proc(self: ^spPropertyIdArray) -> spPropertyId ---
 	spPropertyIdArray_peek :: proc(self: ^spPropertyIdArray) -> spPropertyId ---
 
@@ -1150,7 +1168,7 @@ foreign lib {
 	spTimelineArray_addAll :: proc(self: ^spTimelineArray, other: ^spTimelineArray) ---
 	spTimelineArray_addAllValues :: proc(self: ^spTimelineArray, values: [^]^spTimeline, offset: cc.int, count: cc.int) ---
 	spTimelineArray_removeAt :: proc(self: ^spTimelineArray, index: cc.int) ---
-	spTimelineArray_contains :: proc(self: ^spTimelineArray, value: ^spTimeline) -> cc.bool ---
+	spTimelineArray_contains :: proc(self: ^spTimelineArray, value: ^spTimeline) -> b32 ---
 	spTimelineArray_pop :: proc(self: ^spTimelineArray) -> ^spTimeline ---
 	spTimelineArray_peek :: proc(self: ^spTimelineArray) -> ^spTimeline ---
 
@@ -1159,16 +1177,16 @@ foreign lib {
 	spAnimationState_create :: proc(data: ^spAnimationStateData) -> ^spAnimationState ---
 	spAnimationState_dispose :: proc(self: ^spAnimationState) ---
 	spAnimationState_update :: proc(self: ^spAnimationState, delta: cc.float) ---
-	spAnimationState_apply :: proc(self: ^spAnimationState, skeleton: ^spSkeleton) -> cc.bool ---
+	spAnimationState_apply :: proc(self: ^spAnimationState, skeleton: ^spSkeleton) -> b32 ---
 	spAnimationState_clearTracks :: proc(self: ^spAnimationState) ---
 	spAnimationState_clearTrack :: proc(self: ^spAnimationState, trackIndex: cc.int) ---
 	/** Set the current animation. Any queued animations are cleared. */
-	spAnimationState_setAnimationByName :: proc(self: ^spAnimationState, trackIndex: cc.int, animationName: cstring, loop: cc.bool) -> ^spTrackEntry ---
-	spAnimationState_setAnimation :: proc(self: ^spAnimationState, trackIndex: cc.int, animation: ^spAnimation, loop: cc.bool) -> ^spTrackEntry ---
+	spAnimationState_setAnimationByName :: proc(self: ^spAnimationState, trackIndex: cc.int, animationName: cstring, loop: b32) -> ^spTrackEntry ---
+	spAnimationState_setAnimation :: proc(self: ^spAnimationState, trackIndex: cc.int, animation: ^spAnimation, loop: b32) -> ^spTrackEntry ---
 	/** Adds an animation to be played delay seconds after the current or last queued animation, taking into account any mix
 	* duration. */
-	spAnimationState_addAnimationByName :: proc(self: ^spAnimationState, trackIndex: cc.int, animationName: cstring, loop: cc.bool, delay: cc.float) -> ^spTrackEntry ---
-	spAnimationState_addAnimation :: proc(self: ^spAnimationState, trackIndex: cc.int, animation: ^spAnimation, loop: cc.bool, delay: cc.float) -> ^spTrackEntry ---
+	spAnimationState_addAnimationByName :: proc(self: ^spAnimationState, trackIndex: cc.int, animationName: cstring, loop: b32, delay: cc.float) -> ^spTrackEntry ---
+	spAnimationState_addAnimation :: proc(self: ^spAnimationState, trackIndex: cc.int, animation: ^spAnimation, loop: b32, delay: cc.float) -> ^spTrackEntry ---
 	spAnimationState_setEmptyAnimation :: proc(self: ^spAnimationState, trackIndex: cc.int, mixDuration: cc.float) -> ^spTrackEntry ---
 	spAnimationState_addEmptyAnimation :: proc(self: ^spAnimationState, trackIndex: cc.int, mixDuration: cc.float, delay: cc.float) -> ^spTrackEntry ---
 	spAnimationState_setEmptyAnimations :: proc(self: ^spAnimationState, mixDuration: cc.float) ---
@@ -1190,7 +1208,7 @@ foreign lib {
 	spTrackEntryArray_addAll :: proc(self: ^spTrackEntryArray, other: ^spTrackEntryArray) ---
 	spTrackEntryArray_addAllValues :: proc(self: ^spTrackEntryArray, values: [^]^spTrackEntry, offset: cc.int, count: cc.int) ---
 	spTrackEntryArray_removeAt :: proc(self: ^spTrackEntryArray, index: cc.int) ---
-	spTrackEntryArray_contains :: proc(self: ^spTrackEntryArray, value: ^spTrackEntry) -> cc.bool ---
+	spTrackEntryArray_contains :: proc(self: ^spTrackEntryArray, value: ^spTrackEntry) -> b32 ---
 	spTrackEntryArray_pop :: proc(self: ^spTrackEntryArray) -> ^spTrackEntry ---
 	spTrackEntryArray_peek :: proc(self: ^spTrackEntryArray) -> ^spTrackEntry ---
 
@@ -1213,7 +1231,7 @@ foreign lib {
 	// name##_addAll :: proc(self: ^name, other: ^name) ---
 	// name##_addAllValues :: proc(self: ^name, values: [^]T, offset: cc.int, count: cc.int) ---
 	// name##_removeAt :: proc(self: ^name, index: cc.int) ---
-	// name##_contains :: proc(self: ^name, value: T) -> cc.bool ---
+	// name##_contains :: proc(self: ^name, value: T) -> b32 ---
 	// name##_pop :: proc(self:^name) -> T ---
 	// name##_peek :: proc(self: ^name) -> T ---
 
@@ -1239,7 +1257,7 @@ foreign lib {
 	spKeyValueArray_addAll :: proc(self: ^spKeyValueArray, other: ^spKeyValueArray) ---
 	spKeyValueArray_addAllValues :: proc(self: ^spKeyValueArray, values: [^]spKeyValue, offset: cc.int, count: cc.int) ---
 	spKeyValueArray_removeAt :: proc(self: ^spKeyValueArray, index: cc.int) ---
-	spKeyValueArray_contains :: proc(self: ^spKeyValueArray, value: spKeyValue) -> cc.bool ---
+	spKeyValueArray_contains :: proc(self: ^spKeyValueArray, value: spKeyValue) -> b32 ---
 	spKeyValueArray_pop :: proc(self: ^spKeyValueArray) -> spKeyValue ---
 	spKeyValueArray_peek :: proc(self: ^spKeyValueArray) -> spKeyValue ---
 
@@ -1261,8 +1279,8 @@ foreign lib {
 	spAttachmentLoader_disposeAttachment :: proc(self: ^spAttachmentLoader, attachment: ^spAttachment) ---
 
 	// [Bone.h] ---
-	spBone_setYDown :: proc(yDown: cc.bool) ---
-	spBone_isYDown :: proc() -> cc.bool ---
+	spBone_setYDown :: proc(yDown: b32) ---
+	spBone_isYDown :: proc() -> b32 ---
 	/* @param parent May be 0. */
 	spBone_create :: proc(data: ^spBoneData, skeleton: ^spSkeleton, parent: ^spBone) -> ^spBone ---
 	spBone_dispose :: proc(self: ^spBone) ---
@@ -1330,8 +1348,8 @@ foreign lib {
 	spIkConstraint_create :: proc(data: ^spIkConstraintData, skeleton: ^spSkeleton) -> ^spIkConstraint ---
 	spIkConstraint_dispose :: proc(self: ^spIkConstraint) ---
 	spIkConstraint_update :: proc(self: ^spIkConstraint) ---
-	spIkConstraint_apply1 :: proc(bone: ^spBone, targetX: cc.float, targetY: cc.float, compress: cc.bool, stretch: cc.bool, uniform: cc.bool, alpha: cc.float) ---
-	spIkConstraint_apply2 :: proc(parent: ^spBone, child: ^spBone, targetX: cc.float, targetY: cc.float, bendDirection: cc.int, stretch: cc.bool, uniform: cc.bool, softness: cc.float, alpha: cc.float) ---
+	spIkConstraint_apply1 :: proc(bone: ^spBone, targetX: cc.float, targetY: cc.float, compress: b32, stretch: b32, uniform: b32, alpha: cc.float) ---
+	spIkConstraint_apply2 :: proc(parent: ^spBone, child: ^spBone, targetX: cc.float, targetY: cc.float, bendDirection: cc.int, stretch: b32, uniform: b32, softness: cc.float, alpha: cc.float) ---
 
 	// [IkConstraintData.h] ---
 	spIkConstraintData_create :: proc(name: cstring) -> ^spIkConstraintData ---
@@ -1350,7 +1368,7 @@ foreign lib {
 	spPathConstraint_create :: proc(data: ^spPathConstraintData, skeleton: ^spSkeleton) -> ^spPathConstraint ---
 	spPathConstraint_dispose :: proc(self: ^spPathConstraint) ---
 	spPathConstraint_update :: proc(self: ^spPathConstraint) ---
-	spPathConstraint_computeWorldPositions :: proc(self: ^spPathConstraint, path: ^spPathAttachment, spacesCount: cc.int, tangents: cc.bool) -> cc.float ---
+	spPathConstraint_computeWorldPositions :: proc(self: ^spPathConstraint, path: ^spPathAttachment, spacesCount: cc.int, tangents: b32) -> cc.float ---
 
 	// [PointConstraintData.h] ---
 	spPathConstraintData_create :: proc(name: cstring) -> ^spPathConstraintData ---
@@ -1382,7 +1400,7 @@ foreign lib {
 	spTextureRegionArray_addAll :: proc(self: ^spTextureRegionArray, other: ^spTextureRegionArray) ---
 	spTextureRegionArray_addAllValues :: proc(self: ^spTextureRegionArray, values: [^]^spTextureRegion, offset: cc.int, count: cc.int) ---
 	spTextureRegionArray_removeAt :: proc(self: ^spTextureRegionArray, index: cc.int) ---
-	spTextureRegionArray_contains :: proc(self: ^spTextureRegionArray, value: ^spTextureRegion) -> cc.bool ---
+	spTextureRegionArray_contains :: proc(self: ^spTextureRegionArray, value: ^spTextureRegion) -> b32 ---
 	spTextureRegionArray_pop :: proc(self: ^spTextureRegionArray) -> ^spTextureRegion ---
 	spTextureRegionArray_peek :: proc(self: ^spTextureRegionArray) -> ^spTextureRegion ---
 
@@ -1434,18 +1452,18 @@ foreign lib {
 	// [SkeletonBounds.h] ---
 	spPolygon_create :: proc(capacity: cc.int) -> ^spPolygon ---
 	spPolygon_dispose :: proc(self: ^spPolygon) ---
-	spPolygon_containsPoint :: proc(polygon: ^spPolygon, x: cc.float, y: cc.float) -> cc.bool ---
-	spPolygon_intersectsSegment :: proc(polygon: ^spPolygon, x1: cc.float, y1: cc.float, x2: cc.float, y2: cc.float) -> cc.bool ---
+	spPolygon_containsPoint :: proc(polygon: ^spPolygon, x: cc.float, y: cc.float) -> b32 ---
+	spPolygon_intersectsSegment :: proc(polygon: ^spPolygon, x1: cc.float, y1: cc.float, x2: cc.float, y2: cc.float) -> b32 ---
 
 	spSkeletonBounds_create :: proc() -> ^spSkeletonBounds ---
 	spSkeletonBounds_dispose :: proc(self: ^spSkeletonBounds) ---
-	spSkeletonBounds_update :: proc(self: ^spSkeletonBounds, skeleton: ^spSkeleton, updateAabb: cc.bool) ---
+	spSkeletonBounds_update :: proc(self: ^spSkeletonBounds, skeleton: ^spSkeleton, updateAabb: b32) ---
 	/** Returns true if the axis aligned bounding box contains the point. */
-	spSkeletonBounds_aabbContainsPoint :: proc(self: ^spSkeletonBounds, x: cc.float, y: cc.float) -> cc.bool ---
+	spSkeletonBounds_aabbContainsPoint :: proc(self: ^spSkeletonBounds, x: cc.float, y: cc.float) -> b32 ---
 	/** Returns true if the axis aligned bounding box intersects the line segment. */
-	spSkeletonBounds_aabbIntersectsSegment :: proc(self: ^spSkeletonBounds, x1: cc.float, y1: cc.float, x2: cc.float, y2: cc.float) -> cc.bool ---
+	spSkeletonBounds_aabbIntersectsSegment :: proc(self: ^spSkeletonBounds, x1: cc.float, y1: cc.float, x2: cc.float, y2: cc.float) -> b32 ---
 	/** Returns true if the axis aligned bounding box intersects the axis aligned bounding box of the specified bounds. */
-	spSkeletonBounds_aabbIntersectsSkeleton :: proc(self: ^spSkeletonBounds, bounds: ^spSkeletonBounds) -> cc.bool ---
+	spSkeletonBounds_aabbIntersectsSkeleton :: proc(self: ^spSkeletonBounds, bounds: ^spSkeletonBounds) -> b32 ---
 	/** Returns the first bounding box attachment that contains the point, or null. When doing many checks, it is usually more
 	* efficient to only call this method if spSkeletonBounds_aabbContainsPoint returns true. */
 	spSkeletonBounds_containsPoint :: proc(self: ^spSkeletonBounds, x: cc.float, y: cc.float) -> ^spBoundingBoxAttachment ---
@@ -1460,7 +1478,7 @@ foreign lib {
 	spSkeletonClipping_clipStart :: proc(self: ^spSkeletonClipping, slot: ^spSlot, clip: ^spClippingAttachment) -> cc.int ---
 	spSkeletonClipping_clipEnd :: proc(self: ^spSkeletonClipping, slot: ^spSlot) ---
 	spSkeletonClipping_clipEnd2 :: proc(self: ^spSkeletonClipping) ---
-	spSkeletonClipping_isClipping :: proc(self: ^spSkeletonClipping) -> cc.bool ---
+	spSkeletonClipping_isClipping :: proc(self: ^spSkeletonClipping) -> b32 ---
 	spSkeletonClipping_clipTriangles :: proc(self: ^spSkeletonClipping, vertices: [^]cc.float, verticesLength: cc.int, triangles: [^]cc.ushort, trianglesLength: cc.int, uvs: [^]cc.float, stride: cc.int) ---
 	spSkeletonClipping_dispose :: proc(self: ^spSkeletonClipping) ---
 
@@ -1512,7 +1530,7 @@ foreign lib {
 	spBoneDataArray_addAll :: proc(self: ^spBoneDataArray, other: ^spBoneDataArray) ---
 	spBoneDataArray_addAllValues :: proc(self: ^spBoneDataArray, values: [^]^spBoneData, offset: cc.int, count: cc.int) ---
 	spBoneDataArray_removeAt :: proc(self: ^spBoneDataArray, index: cc.int) ---
-	spBoneDataArray_contains :: proc(self: ^spBoneDataArray, value: ^spBoneData) -> cc.bool ---
+	spBoneDataArray_contains :: proc(self: ^spBoneDataArray, value: ^spBoneData) -> b32 ---
 	spBoneDataArray_pop :: proc(self: ^spBoneDataArray) -> ^spBoneData ---
 	spBoneDataArray_peek :: proc(self: ^spBoneDataArray) -> ^spBoneData ---
 
@@ -1525,7 +1543,7 @@ foreign lib {
 	spIkConstraintDataArray_addAll :: proc(self: ^spIkConstraintDataArray, other: ^spIkConstraintDataArray) ---
 	spIkConstraintDataArray_addAllValues :: proc(self: ^spIkConstraintDataArray, values: [^]^spIkConstraintData, offset: cc.int, count: cc.int) ---
 	spIkConstraintDataArray_removeAt :: proc(self: ^spIkConstraintDataArray, index: cc.int) ---
-	spIkConstraintDataArray_contains :: proc(self: ^spIkConstraintDataArray, value: ^spIkConstraintData) -> cc.bool ---
+	spIkConstraintDataArray_contains :: proc(self: ^spIkConstraintDataArray, value: ^spIkConstraintData) -> b32 ---
 	spIkConstraintDataArray_pop :: proc(self: ^spIkConstraintDataArray) -> ^spIkConstraintData ---
 	spIkConstraintDataArray_peek :: proc(self: ^spIkConstraintDataArray) -> ^spIkConstraintData ---
 
@@ -1538,7 +1556,7 @@ foreign lib {
 	spTransformConstraintDataArray_addAll :: proc(self: ^spTransformConstraintDataArray, other: ^spTransformConstraintDataArray) ---
 	spTransformConstraintDataArray_addAllValues :: proc(self: ^spTransformConstraintDataArray, values: [^]^spTransformConstraintData, offset: cc.int, count: cc.int) ---
 	spTransformConstraintDataArray_removeAt :: proc(self: ^spTransformConstraintDataArray, index: cc.int) ---
-	spTransformConstraintDataArray_contains :: proc(self: ^spTransformConstraintDataArray, value: ^spTransformConstraintData) -> cc.bool ---
+	spTransformConstraintDataArray_contains :: proc(self: ^spTransformConstraintDataArray, value: ^spTransformConstraintData) -> b32 ---
 	spTransformConstraintDataArray_pop :: proc(self: ^spTransformConstraintDataArray) -> ^spTransformConstraintData ---
 	spTransformConstraintDataArray_peek :: proc(self: ^spTransformConstraintDataArray) -> ^spTransformConstraintData ---
 
@@ -1551,7 +1569,7 @@ foreign lib {
 	spPathConstraintDataArray_addAll :: proc(self: ^spPathConstraintDataArray, other: ^spPathConstraintDataArray) ---
 	spPathConstraintDataArray_addAllValues :: proc(self: ^spPathConstraintDataArray, values: [^]^spPathConstraintData, offset: cc.int, count: cc.int) ---
 	spPathConstraintDataArray_removeAt :: proc(self: ^spPathConstraintDataArray, index: cc.int) ---
-	spPathConstraintDataArray_contains :: proc(self: ^spPathConstraintDataArray, value: ^spPathConstraintData) -> cc.bool ---
+	spPathConstraintDataArray_contains :: proc(self: ^spPathConstraintDataArray, value: ^spPathConstraintData) -> b32 ---
 	spPathConstraintDataArray_pop :: proc(self: ^spPathConstraintDataArray) -> ^spPathConstraintData ---
 	spPathConstraintDataArray_peek :: proc(self: ^spPathConstraintDataArray) -> ^spPathConstraintData ---
 
@@ -1591,6 +1609,6 @@ foreign lib {
 // that uses this function will make sure the memory is deallocated so you do 
 // not have to worry about it. 
 @(export)
-_spUtil_readFile :: proc(path: cstring, length: ^cc.int) -> cstring {
+_spUtil_readFile :: proc "c" (path: cstring, length: ^cc.int) -> cstring {
 	return _spReadFile(path, length)
 }
