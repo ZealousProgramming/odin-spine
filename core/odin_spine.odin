@@ -40,6 +40,7 @@ import cc "core:c"
 when size_of(rawptr) == 8 {
 	#assert(size_of(spAtlasPage) == 72 && offset_of(spAtlasPage, next) == 64)
 	#assert(size_of(spBone) == 128 && offset_of(spBone, active) == 124)
+	#assert(offset_of(spBone, worldX) == 104 && offset_of(spBone, worldY) == 116)
 	#assert(size_of(spSlot) == 80)
 	#assert(size_of(spRegionAttachment) == 184)
 	#assert(size_of(spMeshAttachment) == 216)
@@ -303,7 +304,7 @@ spAnimationState :: struct {
 	data:           ^spAnimationStateData,
 	tracksCount:    cc.int,
 	tracks:         [^]^spTrackEntry,
-	listener:       #type proc(
+	listener:       #type proc "c" (
 		state: ^spAnimationState,
 		type: spEventType,
 		entry: ^spTrackEntry,
@@ -390,12 +391,14 @@ spBone :: struct {
 	parent:                           ^spBone,
 	childrenCount:                    cc.int,
 	children:                         [^]^spBone,
-	x, y, ax, ay:                     cc.float,
-	rotation, arotation:              cc.float,
-	scaleX, scaleY, ascaleX, ascaleY: cc.float,
-	shearX, shearY, ashearX, ashearY: cc.float,
-	a, b, c, d:                       cc.float,
-	worldX, worldY:                   cc.float,
+	// Same order as spine-c's Bone.h: the world transform is the rows
+	// (a, b, worldX) and (c, d, worldY).
+	x, y, rotation:                   cc.float,
+	scaleX, scaleY, shearX, shearY:   cc.float,
+	ax, ay, arotation:                cc.float,
+	ascaleX, ascaleY, ashearX, ashearY: cc.float,
+	a, b, worldX:                     cc.float,
+	c, d, worldY:                     cc.float,
 	sorted:                           b32,
 	active:                           b32,
 }
@@ -875,7 +878,7 @@ spTrackEntry :: struct {
 	next:                                                           ^spTrackEntry,
 	mixingFrom:                                                     ^spTrackEntry,
 	mixingTo:                                                       ^spTrackEntry,
-	listener:                                                       #type proc(
+	listener:                                                       #type proc "c" (
 		state: ^spAnimationState,
 		type: spEventType,
 		entry: ^spTrackEntry,
@@ -1446,7 +1449,7 @@ foreign lib {
 	spSkeletonBinary_createWithLoader :: proc(attachmentLoader: ^spAttachmentLoader) -> ^spSkeletonBinary ---
 	spSkeletonBinary_create :: proc(atlas: ^spAtlas) -> ^spSkeletonBinary ---
 	spSkeletonBinary_dispose :: proc(self: ^spSkeletonBinary) ---
-	spSkeletonBinary_readSkeletonData :: proc(self: ^spSkeletonBinary, binary: cc.uchar, length: cc.int) -> ^spSkeletonData ---
+	spSkeletonBinary_readSkeletonData :: proc(self: ^spSkeletonBinary, binary: [^]cc.uchar, length: cc.int) -> ^spSkeletonData ---
 	spSkeletonBinary_readSkeletonDataFile :: proc(self: ^spSkeletonBinary, path: cstring) -> ^spSkeletonData ---
 
 	// [SkeletonBounds.h] ---
